@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.arrow-container {
+  display: flex;
+  top: 60px;
+  flex-direction: column;
+  align-items: center;
+  transition: left 0.3s;
+  z-index: 1100;
+  position: absolute;
+  height: 100%;
+}
+.tab:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.3s ease;
+  z-index: 1100;
+}
+.tab:hover .tab-label {
+  opacity: 1;
+  left: 60px;
+  visibility: visible;
+}
+.tab-label {
+  position: absolute;
+  left: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  white-space: nowrap;
+  font-size: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, left 0.3s ease, visibility 0.3s ease;
+}
+#map {
+  height: calc(100vh); /* Browser window height minus header height */
+  width: 100%; /* Full width */
+  position: relative; /* Make sure the map positioning is correct */
+  z-index: 0; /* Background so the map won't overlap other elements */
+}
+
+#map path {
+  outline: none;
+}
