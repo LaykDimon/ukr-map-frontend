@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Popup, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { FAMOUS_PEOPLE } from './const';
 import 'leaflet/dist/leaflet.css';
+import { RoleButton } from './RoleButton';
 
 const ukrBounds = [[44, 22], [53, 40]]; // lat/lng bounds of Ukraine
 
@@ -18,7 +19,7 @@ function JumpToPerson({person}) {
   return null;
 }
 
-function ResetViewButton({bounds}) {
+function ResetViewButton() {
   const map = useMap();
 
   const handleReset = () => {
@@ -51,11 +52,75 @@ function ResetViewButton({bounds}) {
   );
 }
 
+const teachingPrompts = [
+  "Pick 3 figures on the map. Ask students to compare their historical impact.",
+  "Find someone from your region. What do they symbolize?",
+  "Who among the top 50 had the greatest global influence?",
+  "Select two poets and discuss their themes.",
+  "Explore different professions – who inspired change?"
+];
+
+const TeachingPrompt = () => {
+  const [randomPrompt, setRandomPrompt] = useState(
+    teachingPrompts[Math.floor(Math.random() * teachingPrompts.length)]
+  );
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRandomPrompt(teachingPrompts[Math.floor(Math.random() * teachingPrompts.length)]);
+    }, 20000);
+
+    return () => clearInterval(intervalId); // Cleanup the interval on component unmount
+  }, []);
+
+  return (
+    <div style={{position: 'absolute',
+      top: 20,
+      left: 80,
+      padding: '0.5rem 1rem',
+      fontSize: 14,
+      backgroundColor: '#222',
+      color: '#fff',
+      border: '1px solid #555',
+      borderRadius: 6,
+      zIndex: 1000
+    }}>
+      <strong>💡 Teaching idea:</strong> {randomPrompt}
+    </div>
+  );
+};
+
 const Map = () => {
   const [search, setSearch] = useState('');
   const [maxPeopleCount, setMaxPeopleCount] = useState('all');
   const [activePerson, setActivePerson] = useState(null);
   const [hoveredPerson, setHoveredPerson] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showQuestions, setShowQuestions] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('userRole');
+    saved ? setUserRole(saved) : setShowRoleModal(true);
+  }, []);
+
+  const handleSelectRole = (role) => {
+    localStorage.setItem('userRole', role);
+    setUserRole(role);
+    setShowRoleModal(false);
+  };
+
+  const roleEmoji = (role) => {
+    switch (role) {
+      case 'researcher': return '🧑‍🔬';
+      case 'student': return '🎓';
+      case 'teacher': return '🧑‍🏫';
+      case 'guest': return '👀';
+      default: return '';
+    }
+  };
+  
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   const filteredPeople = useMemo(() => {
     const people = maxPeopleCount !== 'all' ? FAMOUS_PEOPLE.slice(0, parseInt(maxPeopleCount)) : FAMOUS_PEOPLE;
@@ -76,7 +141,7 @@ const Map = () => {
   
   return (
     <div style={{ position: 'relative', height: '100vh' }}>
-      <div style={{
+      {userRole !== 'guest' && <div style={{
         position: 'absolute',
         top: 20,
         left: '50%',
@@ -190,7 +255,7 @@ const Map = () => {
             )}
           </ul>
         )}
-      </div>
+      </div>}
 
 
       <div style={{ width: '100%', height: '100vh' }}>
@@ -254,7 +319,7 @@ const Map = () => {
                         {person.name}
                       </a>
                     </h3>
-                    {person.summary && (
+                    {userRole !== 'guest' && person.summary && (
                       <p style={{ margin: 0, fontSize: '0.9em', lineHeight: 1.4 }}>{person.summary.length > 550 ? person.summary.slice(0, 550) + '...' : person.summary}</p>
                     )}
                     {person.birthdate && (
@@ -276,6 +341,156 @@ const Map = () => {
           <ResetViewButton/>
         </MapContainer>
       </div>
+
+      {showRoleModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #1c1c1c, #292929)',
+            color: 'white',
+            padding: '2rem',
+            borderRadius: 16,
+            boxShadow: '0 12px 24px rgba(0,0,0,0.5)',
+            textAlign: 'center',
+            minWidth: 320,
+            maxWidth: '90%',
+            animation: 'fadeIn 0.3s ease-in-out'
+          }}>
+            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.4rem' }}>👋 Who are you?</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <RoleButton role="researcher" onClick={handleSelectRole}>🧑‍🔬 Researcher</RoleButton>
+              <RoleButton role="teacher" onClick={handleSelectRole}>🧑‍🏫 Teacher</RoleButton>
+              <RoleButton role="student" onClick={handleSelectRole}>🎓 Student</RoleButton>
+              <RoleButton role="guest" onClick={handleSelectRole}>👀 Guest</RoleButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {userRole && (
+        <div style={{
+          position: 'fixed',
+          bottom: 12,
+          left: 12,
+          background: '#1c1c1c',
+          color: '#fff',
+          padding: '0.5rem 1rem',
+          borderRadius: 10,
+          fontSize: 14,
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+          border: '1px solid #333'
+        }}>
+          <span style={{ opacity: 0.9 }}>Role: {roleEmoji(userRole)} {capitalize(userRole)}</span>
+          <button onClick={() => setShowRoleModal(true)} style={{
+            background: '#2d2d2d',
+            border: '1px solid #444',
+            color: '#ccc',
+            padding: '0.25rem 0.6rem',
+            borderRadius: 6,
+            cursor: 'pointer',
+            fontSize: 12,
+            transition: 'all 0.2s ease'
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#444'}
+            onMouseLeave={e => e.currentTarget.style.background = '#2d2d2d'}
+          >
+            Change
+          </button>
+        </div>
+      )}
+
+      {userRole === 'researcher' && filteredPeople.length > 0 && (
+        <button
+          title='Export filtered people data as JSON'
+          onClick={() => {
+            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(filteredPeople, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute('href', dataStr);
+            downloadAnchor.setAttribute('download', 'notable-people.json');
+            downloadAnchor.click();
+          }}
+          style={{
+            position: 'absolute',
+            top: 20,
+            left: 80,
+            padding: '0.5rem 1rem',
+            fontSize: 14,
+            backgroundColor: '#222',
+            color: '#fff',
+            border: '1px solid #555',
+            borderRadius: 6,
+            cursor: 'pointer',
+            zIndex: 1000,
+          }}
+        >
+          📄 Export JSON
+        </button>
+      )}
+
+      {userRole === 'teacher' && <TeachingPrompt />}
+      {userRole === 'teacher' && (
+        <div style={{position: 'absolute',
+          top: 70,
+          left: 80,
+          padding: '1rem 1.5rem',
+          fontSize: '14px',
+          backgroundColor: '#222',
+          color: '#fff',
+          border: '1px solid #555',
+          borderRadius: '8px',
+          zIndex: 1000,
+          width: 'fit-content',
+          boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+        }}>
+          <button onClick={() => setShowQuestions(prev => !prev)}
+            style={{
+              padding: '0.6rem 1.2rem',
+              fontSize: '14px',
+              backgroundColor: '#333', 
+              color: '#fff',
+              border: '1px solid #444',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease-in-out',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+            }}
+          >
+            {showQuestions ? '🔽 Hide Questions' : '❓ Suggested Questions'}
+          </button>
+          {showQuestions && (
+            <ul style={{
+              marginTop: '0.5rem',
+              padding: '0.5rem 0',
+              listStyleType: 'disc',
+              color: '#ddd',
+              marginLeft: '1.5rem',
+            }}>
+              <li style={{ marginBottom: '0.8rem' }}>Who on the map lived during the same era?</li>
+              <li style={{ marginBottom: '0.8rem' }}>Which of these people contributed to Ukrainian independence?</li>
+              <li style={{ marginBottom: '0.8rem' }}>Can you find someone born near your city?</li>
+              <li style={{ marginBottom: '0.8rem' }}>Who influenced Ukrainian culture the most?</li>
+              <li style={{ marginBottom: '0.8rem' }}>Which figures are linked to Ukrainian literature?</li>
+              <li style={{ marginBottom: '0.8rem' }}>Who were the key figures during the Cossack Hetmanate?</li>
+              <li>Can you find someone who contributed to Ukrainian art?</li>
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -72,7 +72,7 @@ body {
 }
 
 .popup-fade {
-  animation: fadeIn 1s ease-in;
+  animation: fadeIn 0.7s ease-in;
 }
 
 @keyframes fadeIn {
