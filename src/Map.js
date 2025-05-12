@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, Popup, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Popup, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { FAMOUS_PEOPLE } from './const';
 import 'leaflet/dist/leaflet.css';
 
@@ -22,7 +22,7 @@ function ResetViewButton({bounds}) {
   const map = useMap();
 
   const handleReset = () => {
-    map.fitBounds(ukrBounds);
+    map.flyToBounds(ukrBounds, { duration: 0.8 });
   };
 
   return (
@@ -126,11 +126,12 @@ const Map = () => {
                 padding: '0.6rem 2.5rem 0.6rem 1rem',
                 borderRadius: 6,
                 border: '1px solid #555',
-                backgroundColor: '#1e1e1e',
                 color: '#fff',
                 fontSize: 16,
                 outline: 'none',
-                fontFamily: 'inherit'
+                fontFamily: 'inherit',
+                backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
               }}
             />
             {search && (
@@ -179,7 +180,7 @@ const Map = () => {
                     borderBottom: '1px solid #222',
                     color: '#eee',
                     background: hoveredPerson === p ? '#222' : 'transparent',
-                    transition: 'background 0.2s'
+                    transition: 'background-color 0.3s ease, transform 0.2s ease'
                   }}>
                 {p.name}
               </li>
@@ -209,8 +210,31 @@ const Map = () => {
               fillColor={hoveredPerson === person ? 'orange' : 'blue'}
               color="white"
               fillOpacity={0.8}
+              style={{ transition: 'all 0.3s ease' }}
+              eventHandlers={{
+                mouseover: (e) => e.target.setStyle({ fillColor: 'yellow', radius: 5 }),
+                mouseout: (e) => e.target.setStyle({ fillColor: 'blue', radius: 2.5 + Math.sqrt(person.rating) })
+              }}
             >
-              <Popup minWidth={350}>
+              {/* Tooltip for hover */}
+              <Tooltip direction="top" offset={[-10, -10]} opacity={1}>
+                <div style={{ fontSize: '14px', textAlign: 'left' }}>
+                  <strong>{person.name}</strong><br />
+                  {person.birthdate && (
+                    <span style={{ fontSize: '12px', color: '#ccc' }}>
+                      Born: {person.birthdate}
+                    </span>
+                  )}
+                  <br />
+                  {person.birthplace?.birthplace && (
+                    <span style={{ fontSize: '12px', color: '#ccc' }}>
+                      Place: {person.birthplace.birthplace}
+                    </span>
+                  )}
+                </div>
+              </Tooltip>
+
+              <Popup minWidth={350} className="popup-fade">
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
                   {person.image && (
                     <img

@@ -70,3 +70,16 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #666;
 }
+
+.popup-fade {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
