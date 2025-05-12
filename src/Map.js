@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 const ukrBounds = [[44, 22], [53, 40]]; // lat/lng bounds of Ukraine
 
 
-function FlyToPerson({person}) {
+function JumpToPerson({person}) {
   const map = useMap();
 
   useEffect(() => {
@@ -18,9 +18,43 @@ function FlyToPerson({person}) {
   return null;
 }
 
+function ResetViewButton({bounds}) {
+  const map = useMap();
+
+  const handleReset = () => {
+    map.fitBounds(ukrBounds);
+  };
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 20,
+      right: 20,
+      zIndex: 1000
+    }}>
+      <button
+        onClick={handleReset}
+        style={{
+          background: 'rgba(30, 30, 30, 0.85)',
+          color: 'white',
+          border: '1px solid #555',
+          borderRadius: 6,
+          padding: '0.5rem 0.75rem',
+          cursor: 'pointer',
+          fontSize: 14,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+        }}
+      >
+        Reset View
+      </button>
+    </div>
+  );
+}
+
 const Map = () => {
   const [search, setSearch] = useState('');
   const [activePerson, setActivePerson] = useState(null);
+  const [hoveredPerson, setHoveredPerson] = useState(null);
 
   const filteredPeople = useMemo(() => {
     return FAMOUS_PEOPLE.filter(p =>
@@ -28,10 +62,14 @@ const Map = () => {
     );
   }, [search]);
 
+  const clearSearch = () => {
+    setSearch('');
+    setHoveredPerson(null);
+  }
+
   const handleSearchKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      setSearch('');
-    }
+    if (e.key === 'Escape')
+      clearSearch();
   };
   
   return (
@@ -72,7 +110,7 @@ const Map = () => {
           />
           {search && (
             <button
-              onClick={() => setSearch('')}
+              onClick={() => clearSearch()}
               style={{
                 position: 'absolute',
                 right: 10,
@@ -107,15 +145,16 @@ const Map = () => {
               {filteredPeople.map((p, idx) => (
                 <li key={idx}
                     onClick={() => setActivePerson(p)}
+                    onMouseEnter={() => setHoveredPerson(p)}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     style={{
                       padding: '0.6rem 1rem',
                       cursor: 'pointer',
                       borderBottom: '1px solid #222',
                       color: '#eee',
+                      background: hoveredPerson === p ? '#222' : 'transparent',
                       transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#222'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                    }}>
                   {p.name}
                 </li>
               ))}
@@ -137,10 +176,10 @@ const Map = () => {
             <CircleMarker
               key={idx}
               center={[person.birthplace.lat, person.birthplace.lng]}
-              radius={2.5 + Math.sqrt(person.rating)} // adjust size based on rating
-              fillColor="blue"
+              radius={(hoveredPerson === person ? 6 : 2.5) + Math.sqrt(person.rating)} // adjust size based on rating
+              fillColor={hoveredPerson === person ? 'orange' : 'blue'}
               color="white"
-              fillOpacity={0.7}
+              fillOpacity={0.8}
             >
               <Popup minWidth={350}>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -180,7 +219,8 @@ const Map = () => {
               </Popup>
             </CircleMarker>
           )})}
-          {activePerson && <FlyToPerson person={activePerson} />}
+          {activePerson && <JumpToPerson person={activePerson} />}
+          <ResetViewButton/>
         </MapContainer>
       </div>
     </div>
