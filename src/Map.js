@@ -53,14 +53,16 @@ function ResetViewButton({bounds}) {
 
 const Map = () => {
   const [search, setSearch] = useState('');
+  const [maxPeopleCount, setMaxPeopleCount] = useState('all');
   const [activePerson, setActivePerson] = useState(null);
   const [hoveredPerson, setHoveredPerson] = useState(null);
 
   const filteredPeople = useMemo(() => {
-    return FAMOUS_PEOPLE.filter(p =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search]);
+    const people = maxPeopleCount !== 'all' ? FAMOUS_PEOPLE.slice(0, parseInt(maxPeopleCount)) : FAMOUS_PEOPLE;
+    const result = people.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    const sorted = result.sort((a, b) => b.rating - a.rating);
+    return sorted;
+  }, [search, maxPeopleCount]);
 
   const clearSearch = () => {
     setSearch('');
@@ -74,7 +76,6 @@ const Map = () => {
   
   return (
     <div style={{ position: 'relative', height: '100vh' }}>
-      {/* Search box */}
       <div style={{
         position: 'absolute',
         top: 20,
@@ -87,81 +88,109 @@ const Map = () => {
         width: 510,
         padding: '1rem',
         color: 'white',
-        backdropFilter: 'blur(6px)'
+        backdropFilter: 'blur(6px)',
       }}>
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-            placeholder="🔍 Search a famous person..."
+
+        {/* Dropdown + Search */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: search ? '0.75rem' : 0 }}>
+          <select
+            value={maxPeopleCount}
+            onChange={(e) => setMaxPeopleCount(e.target.value)}
             style={{
-              width: '90%',
-              padding: '0.6rem 2.5rem 0.6rem 1rem',
+              padding: '0.6rem 0.75rem',
               borderRadius: 6,
               border: '1px solid #555',
               backgroundColor: '#1e1e1e',
               color: '#fff',
-              fontSize: 16,
+              fontSize: 14,
+              fontFamily: 'inherit',
               outline: 'none',
-              fontFamily: 'inherit'
+              minWidth: 100,
+              height: 42
             }}
-          />
-          {search && (
-            <button
-              onClick={() => clearSearch()}
+          >
+            <option value="all">All</option>
+            <option value="10">Top 10</option>
+            <option value="50">Top 50</option>
+          </select>
+
+          <div style={{ position: 'relative', flexGrow: 1 }}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="🔍 Search a famous person..."
               style={{
-                position: 'absolute',
-                right: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'transparent',
-                border: 'none',
-                fontSize: 18,
-                color: '#aaa',
-                cursor: 'pointer',
-                padding: 0,
-                lineHeight: 1
+                width: '85%',
+                padding: '0.6rem 2.5rem 0.6rem 1rem',
+                borderRadius: 6,
+                border: '1px solid #555',
+                backgroundColor: '#1e1e1e',
+                color: '#fff',
+                fontSize: 16,
+                outline: 'none',
+                fontFamily: 'inherit'
               }}
-              aria-label="Clear search"
-            >
-              &times;
-            </button>
-          )}
+            />
+            {search && (
+              <button
+                onClick={clearSearch}
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: 18,
+                  color: '#aaa',
+                  cursor: 'pointer',
+                  padding: 0,
+                  lineHeight: 1
+                }}
+                aria-label="Clear search"
+              >
+                &times;
+              </button>
+            )}
+          </div>
         </div>
 
+        {/* Search result list */}
         {search && (
-            <ul className='custom-scrollbar' style={{
-              listStyle: 'none',
-              padding: 0,
-              marginTop: 10,
-              maxHeight: 200,
-              overflowY: 'auto',
-              borderRadius: 6,
-              backgroundColor: '#111',
-              border: '1px solid #333'
-            }}>
-              {filteredPeople.map((p, idx) => (
-                <li key={idx}
-                    onClick={() => setActivePerson(p)}
-                    onMouseEnter={() => setHoveredPerson(p)}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    style={{
-                      padding: '0.6rem 1rem',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #222',
-                      color: '#eee',
-                      background: hoveredPerson === p ? '#222' : 'transparent',
-                      transition: 'background 0.2s'
-                    }}>
-                  {p.name}
-                </li>
-              ))}
-              {filteredPeople.length === 0 && <li style={{ padding: '0.5rem 1rem', color: '#777' }}>No results</li>}
-            </ul>
-          )}
+          <ul className="custom-scrollbar" style={{
+            listStyle: 'none',
+            padding: 0,
+            maxHeight: 200,
+            overflowY: 'auto',
+            borderRadius: 6,
+            backgroundColor: '#111',
+            border: '1px solid #333'
+          }}>
+            {filteredPeople.map((p, idx) => (
+              <li key={idx}
+                  onClick={() => setActivePerson(p)}
+                  onMouseEnter={() => setHoveredPerson(p)}
+                  onMouseLeave={() => setHoveredPerson(null)}
+                  style={{
+                    padding: '0.6rem 1rem',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #222',
+                    color: '#eee',
+                    background: hoveredPerson === p ? '#222' : 'transparent',
+                    transition: 'background 0.2s'
+                  }}>
+                {p.name}
+              </li>
+            ))}
+            {filteredPeople.length === 0 && (
+              <li style={{ padding: '0.5rem 1rem', color: '#777' }}>No results</li>
+            )}
+          </ul>
+        )}
       </div>
+
 
       <div style={{ width: '100%', height: '100vh' }}>
         <MapContainer bounds={ukrBounds} style={{ height: '100vh', width: '100%' }}>
