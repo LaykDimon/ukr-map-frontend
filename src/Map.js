@@ -75,8 +75,8 @@ const TeachingPrompt = () => {
 
   return (
     <div style={{position: 'absolute',
-      top: 20,
-      left: 80,
+      bottom: 80,
+      left: 20,
       padding: '0.5rem 1rem',
       fontSize: 14,
       backgroundColor: '#222',
@@ -98,6 +98,11 @@ const Map = () => {
   const [userRole, setUserRole] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
+  const [removedPeople, setRemovedPeople] = useState(() => {
+    const saved = localStorage.getItem('removedPeople');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showRemovedList, setShowRemovedList] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('userRole');
@@ -108,6 +113,20 @@ const Map = () => {
     localStorage.setItem('userRole', role);
     setUserRole(role);
     setShowRoleModal(false);
+  };
+
+  const handleRemovePerson = (person) => {
+    const updatedRemoved = [...removedPeople, person];
+    setRemovedPeople(updatedRemoved);
+    localStorage.setItem('removedPeople', JSON.stringify(updatedRemoved));
+    setActivePerson(null);
+  };
+
+  const handleRestorePerson = (person) => {
+    const updatedRemoved = removedPeople.filter(p => p.id !== person.id);
+    setRemovedPeople(updatedRemoved);
+    localStorage.setItem('removedPeople', JSON.stringify(updatedRemoved));
+    setActivePerson(person);
   };
 
   const roleEmoji = (role) => {
@@ -124,10 +143,12 @@ const Map = () => {
 
   const filteredPeople = useMemo(() => {
     const people = maxPeopleCount !== 'all' ? FAMOUS_PEOPLE.slice(0, parseInt(maxPeopleCount)) : FAMOUS_PEOPLE;
-    const result = people.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    const result = people
+      .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+      .filter(p => !removedPeople.some(rp => rp.id === p.id));
     const sorted = result.sort((a, b) => b.rating - a.rating);
     return sorted;
-  }, [search, maxPeopleCount]);
+  }, [search, maxPeopleCount, removedPeople]);
 
   const clearSearch = () => {
     setSearch('');
@@ -319,6 +340,28 @@ const Map = () => {
                         {person.name}
                       </a>
                     </h3>
+                    {userRole !== 'guest' && <button
+                      onClick={() => handleRemovePerson(person)}
+                      style={{
+                        background: 'rgba(255, 75, 75, 0.1)',
+                        border: '1px solid rgba(255, 75, 75, 0.3)',
+                        color: '#ff4b4b',
+                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        flexShrink: 0,
+                        ':hover': {
+                          background: 'rgba(255, 75, 75, 0.2)',
+                          borderColor: 'rgba(255, 75, 75, 0.5)'
+                        }
+                      }}
+                      title="Remove from map"
+                    >
+                      × Remove
+                    </button>}
                     {userRole !== 'guest' && person.summary && (
                       <p style={{ margin: 0, fontSize: '0.9em', lineHeight: 1.4 }}>{person.summary.length > 550 ? person.summary.slice(0, 550) + '...' : person.summary}</p>
                     )}
@@ -442,7 +485,7 @@ const Map = () => {
       {userRole === 'teacher' && <TeachingPrompt />}
       {userRole === 'teacher' && (
         <div style={{position: 'absolute',
-          top: 70,
+          top: 20,
           left: 80,
           padding: '1rem 1.5rem',
           fontSize: '14px',
@@ -488,6 +531,126 @@ const Map = () => {
               <li style={{ marginBottom: '0.8rem' }}>Who were the key figures during the Cossack Hetmanate?</li>
               <li>Can you find someone who contributed to Ukrainian art?</li>
             </ul>
+          )}
+        </div>
+      )}
+
+      {/* Removed People Panel */}
+      {userRole !== 'guest' && removedPeople.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          bottom: 40,
+          right: 20,
+          zIndex: 1000,
+          width: showRemovedList ? 300 : 50,
+          height: showRemovedList ? 'auto' : 50,
+          maxHeight: '60vh',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease',
+          backgroundColor: 'rgba(40, 40, 40, 0.9)',
+          borderRadius: 8,
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(6px)',
+          border: '1px solid #444'
+        }}>
+          <div 
+            onClick={() => setShowRemovedList(!showRemovedList)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.6rem',
+              cursor: 'pointer',
+              backgroundColor: showRemovedList ? '#2d2d2d' : 'transparent',
+              borderBottom: showRemovedList ? '1px solid #3a3a3a' : 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8' }}>
+              <div style={{
+                width: 30,
+                height: 30,
+                borderRadius: 6,
+                background: 'rgba(255, 75, 75, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: 16 }}>🗑️</span>
+              </div>
+              {showRemovedList && (
+                <span style={{ fontWeight: '500', fontSize: 14, color: '#eee' }}>
+                  Hidden ({removedPeople.length})
+                </span>
+              )}
+            </div>
+            {showRemovedList && (
+              <span style={{ fontSize: 12, color: '#999', marginRight: 4 }}>
+                {showRemovedList ? '▼' : '▲'}
+              </span>
+            )}
+          </div>
+
+          {showRemovedList && (
+            <div style={{
+              padding: '4px 0',
+              overflowY: 'auto',
+              maxHeight: 'calc(50vh - 50px)'
+            }}>
+              <ul style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: 0
+              }}>
+                {removedPeople.map((person, idx) => (
+                  <li 
+                    key={idx}
+                    style={{
+                      padding: '8px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderBottom: '1px solid #333',
+                      transition: 'background-color 0.2s',
+                      ':hover': {
+                        backgroundColor: '#2d2d2d'
+                      }
+                    }}
+                  >
+                    <span style={{ 
+                      fontSize: 13,
+                      color: '#ddd',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: 180
+                    }}>{person.name}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRestorePerson(person);
+                      }}
+                      style={{
+                        background: 'rgba(74, 144, 226, 0.1)',
+                        border: '1px solid rgba(74, 144, 226, 0.3)',
+                        color: '#4a90e2',
+                        borderRadius: 4,
+                        padding: '4px 8px',
+                        fontSize: 12,
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        ':hover': {
+                          background: 'rgba(74, 144, 226, 0.2)',
+                          borderColor: 'rgba(74, 144, 226, 0.5)'
+                        }
+                      }}
+                    >
+                      Restore
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       )}
