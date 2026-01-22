@@ -1,64 +1,125 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
+import "./AuthModal.css";
 
-const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
-  const [isLoginMode, setIsLoginMode] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const apiUrl = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (isLoginMode) {
-        const response = await axios.post(`${apiUrl}/auth/login`, { email, password });
-        const { token } = response.data;
-        localStorage.setItem('jwt', token);
-        onLoginSuccess();
-      } else {
-        try {
-          await axios.post(`${apiUrl}/auth/register`, {
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            password: password,
-          });
-        
-          alert('Registration successful!');
-          onClose();
-        } catch (error) {
-          console.error('Error during registration:', error.response?.data);
-          alert('Registration error: ' + JSON.stringify(error.response?.data?.message || 'Unknown error'));
-        }
-        
-      }
-      onClose();
-    } catch (error) {
-      alert('Error: ' + (error.response?.data?.message || 'Something went wrong.'));
-    }
-  };
+const AuthModal = ({ isOpen, onClose, onLogin }) => {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    const endpoint = isRegistering ? "/auth/register" : "/auth/login";
+    const payload = isRegistering
+      ? { email, password, username }
+      : { email, password };
+
+    try {
+      const response = await axios.post(`${API_URL}${endpoint}`, payload);
+      if (response.data.error) {
+        setError(response.data.error);
+        return;
+      }
+
+      const { accessToken, user } = response.data;
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      onLogin(user);
+      onClose();
+    } catch (err) {
+      const msg = err.response?.data?.message;
+      setError(
+        Array.isArray(msg) ? msg.join(", ") : msg || "Something went wrong",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-      <div style={{ width: '400px', background: '#fff', borderRadius: '8px', padding: '20px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)' }}>
-        <h2>{isLoginMode ? 'Log In' : 'Register'}</h2>
-        <form style={{ display: 'flex', flexDirection: 'column' }} onSubmit={handleSubmit}>
-          {!isLoginMode && (
-            <>
-              <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required style={{ width: 'auto', marginBottom: '10px', padding: '10px' }} />
-              <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required style={{ width: 'auto', marginBottom: '10px', padding: '10px' }} />
-            </>
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>{isRegistering ? "Створити акаунт" : "Вхід"}</h2>
+          <button className="close-x-btn" onClick={onClose}>
+            &times;
+          </button>
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          {isRegistering && (
+            <div className="form-group">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
           )}
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: 'auto', marginBottom: '10px', padding: '10px' }} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: 'auto', marginBottom: '10px', padding: '10px' }} />
-          <button type="submit" style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>{isLoginMode ? 'Log In' : 'Register'}</button>
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="form-group">
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <button type="submit" className="submit-btn" disabled={isLoading}>
+            {isLoading
+              ? "Processing..."
+              : isRegistering
+                ? "Зареєструватися"
+                : "Увійти"}
+          </button>
         </form>
-        <button onClick={() => setIsLoginMode(!isLoginMode)} style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>{isLoginMode ? 'Switch to Register' : 'Switch to Log In'}</button>
-        <button onClick={onClose} style={{ width: '100%', padding: '10px' }}>Close</button>
+
+        <div className="modal-footer">
+          <button
+            className="switch-btn"
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setError("");
+            }}
+            disabled={isLoading}
+          >
+            {isRegistering
+              ? "Вже є акаунт? Увійти"
+              : "Немає акаунту? Реєстрація"}
+          </button>
+        </div>
       </div>
     </div>
   );

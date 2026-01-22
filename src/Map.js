@@ -1,18 +1,26 @@
-import { useState, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, Popup, CircleMarker, Tooltip, useMap } from 'react-leaflet';
-import { FAMOUS_PEOPLE } from './const';
-import 'leaflet/dist/leaflet.css';
-import { RoleButton } from './RoleButton';
+import { useState, useMemo, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Popup,
+  CircleMarker,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
+import axios from "axios";
+import "leaflet/dist/leaflet.css";
 
-const ukrBounds = [[44, 22], [53, 40]]; // lat/lng bounds of Ukraine
+const ukrBounds = [
+  [44, 22],
+  [53, 40],
+]; // lat/lng bounds of Ukraine
 
-
-function JumpToPerson({person}) {
+function JumpToPerson({ person }) {
   const map = useMap();
 
   useEffect(() => {
     if (person) {
-      map.flyTo([person.birthplace.lat, person.birthplace.lng], 7);
+      map.flyTo([person.lat, person.lng], 7);
     }
   }, [person]);
 
@@ -27,23 +35,25 @@ function ResetViewButton() {
   };
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: 20,
-      right: 20,
-      zIndex: 1000
-    }}>
+    <div
+      style={{
+        position: "absolute",
+        top: 20,
+        right: 20,
+        zIndex: 1000,
+      }}
+    >
       <button
         onClick={handleReset}
         style={{
-          background: 'rgba(30, 30, 30, 0.85)',
-          color: 'white',
-          border: '1px solid #555',
+          background: "rgba(30, 30, 30, 0.85)",
+          color: "white",
+          border: "1px solid #555",
           borderRadius: 6,
-          padding: '0.5rem 0.75rem',
-          cursor: 'pointer',
+          padding: "0.5rem 0.75rem",
+          cursor: "pointer",
           fontSize: 14,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
         }}
       >
         Reset View
@@ -57,424 +67,511 @@ const teachingPrompts = [
   "Find someone from your region. What do they symbolize?",
   "Who among the top 50 had the greatest global influence?",
   "Select two poets and discuss their themes.",
-  "Explore different professions – who inspired change?"
+  "Explore different professions – who inspired change?",
 ];
 
 const TeachingPrompt = () => {
   const [randomPrompt, setRandomPrompt] = useState(
-    teachingPrompts[Math.floor(Math.random() * teachingPrompts.length)]
+    teachingPrompts[Math.floor(Math.random() * teachingPrompts.length)],
   );
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setRandomPrompt(teachingPrompts[Math.floor(Math.random() * teachingPrompts.length)]);
+      setRandomPrompt(
+        teachingPrompts[Math.floor(Math.random() * teachingPrompts.length)],
+      );
     }, 20000);
 
     return () => clearInterval(intervalId); // Cleanup the interval on component unmount
   }, []);
 
   return (
-    <div style={{position: 'absolute',
-      bottom: 80,
-      left: 20,
-      padding: '0.5rem 1rem',
-      fontSize: 14,
-      backgroundColor: '#222',
-      color: '#fff',
-      border: '1px solid #555',
-      borderRadius: 6,
-      zIndex: 1000
-    }}>
+    <div
+      style={{
+        position: "absolute",
+        bottom: 80,
+        left: 20,
+        padding: "0.5rem 1rem",
+        fontSize: 14,
+        backgroundColor: "#222",
+        color: "#fff",
+        border: "1px solid #555",
+        borderRadius: 6,
+        zIndex: 1000,
+      }}
+    >
       <strong>💡 Teaching idea:</strong> {randomPrompt}
     </div>
   );
 };
 
-const Map = () => {
-  const [search, setSearch] = useState('');
-  const [maxPeopleCount, setMaxPeopleCount] = useState('all');
+const Map = ({ userRole, userName, onLoginClick, onLogoutClick }) => {
+  const [people, setPeople] = useState([]);
+  const [search, setSearch] = useState("");
+  const [maxPeopleCount, setMaxPeopleCount] = useState("all");
   const [activePerson, setActivePerson] = useState(null);
   const [hoveredPerson, setHoveredPerson] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [showRoleModal, setShowRoleModal] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
   const [removedPeople, setRemovedPeople] = useState(() => {
-    const saved = localStorage.getItem('removedPeople');
+    const saved = localStorage.getItem("removedPeople");
     return saved ? JSON.parse(saved) : [];
   });
   const [showRemovedList, setShowRemovedList] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('userRole');
-    saved ? setUserRole(saved) : setShowRoleModal(true);
+    const fetchData = async () => {
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+        const response = await axios.get(`${apiUrl}/wikipedia/famous-people`);
+        setPeople(response.data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+    fetchData();
   }, []);
-
-  const handleSelectRole = (role) => {
-    localStorage.setItem('userRole', role);
-    setUserRole(role);
-    setShowRoleModal(false);
-  };
 
   const handleRemovePerson = (person) => {
     const updatedRemoved = [...removedPeople, person];
     setRemovedPeople(updatedRemoved);
-    localStorage.setItem('removedPeople', JSON.stringify(updatedRemoved));
+    localStorage.setItem("removedPeople", JSON.stringify(updatedRemoved));
     setActivePerson(null);
   };
 
   const handleRestorePerson = (person) => {
-    const updatedRemoved = removedPeople.filter(p => p.id !== person.id);
+    const updatedRemoved = removedPeople.filter((p) => p.id !== person.id);
     setRemovedPeople(updatedRemoved);
-    localStorage.setItem('removedPeople', JSON.stringify(updatedRemoved));
+    localStorage.setItem("removedPeople", JSON.stringify(updatedRemoved));
     setActivePerson(person);
   };
 
   const roleEmoji = (role) => {
     switch (role) {
-      case 'researcher': return '🧑‍🔬';
-      case 'student': return '🎓';
-      case 'teacher': return '🧑‍🏫';
-      case 'guest': return '👀';
-      default: return '';
+      case "researcher":
+        return "🧑‍🔬";
+      case "student":
+        return "🎓";
+      case "teacher":
+        return "🧑‍🏫";
+      case "guest":
+        return "👀";
+      default:
+        return "";
     }
   };
-  
+
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   const filteredPeople = useMemo(() => {
-    const people = maxPeopleCount !== 'all' ? FAMOUS_PEOPLE.slice(0, parseInt(maxPeopleCount)) : FAMOUS_PEOPLE;
-    const result = people
-      .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
-      .filter(p => !removedPeople.some(rp => rp.id === p.id));
+    const sourceList = people;
+    const list =
+      maxPeopleCount !== "all"
+        ? sourceList.slice(0, parseInt(maxPeopleCount))
+        : sourceList;
+
+    const result = list
+      .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+      .filter((p) => !removedPeople.some((rp) => rp.id === p.id));
+
     const sorted = result.sort((a, b) => b.rating - a.rating);
     return sorted;
-  }, [search, maxPeopleCount, removedPeople]);
+  }, [search, maxPeopleCount, removedPeople, people]);
 
   const clearSearch = () => {
-    setSearch('');
+    setSearch("");
     setHoveredPerson(null);
-  }
+  };
 
   const handleSearchKeyDown = (e) => {
-    if (e.key === 'Escape')
-      clearSearch();
+    if (e.key === "Escape") clearSearch();
   };
-  
-  return (
-    <div style={{ position: 'relative', height: '100vh' }}>
-      {userRole !== 'guest' && <div style={{
-        position: 'absolute',
-        top: 20,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        borderRadius: 10,
-        backgroundColor: 'rgba(30, 30, 30, 0.9)',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-        width: 510,
-        padding: '1rem',
-        color: 'white',
-        backdropFilter: 'blur(6px)',
-      }}>
 
-        {/* Dropdown + Search */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: search ? '0.75rem' : 0 }}>
-          <select
-            value={maxPeopleCount}
-            onChange={(e) => setMaxPeopleCount(e.target.value)}
+  return (
+    <div style={{ position: "relative", height: "100vh" }}>
+      {userRole !== "guest" && (
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            borderRadius: 10,
+            backgroundColor: "rgba(30, 30, 30, 0.9)",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+            width: 510,
+            padding: "1rem",
+            color: "white",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          {/* Dropdown + Search */}
+          <div
             style={{
-              padding: '0.6rem 0.75rem',
-              borderRadius: 6,
-              border: '1px solid #555',
-              backgroundColor: '#1e1e1e',
-              color: '#fff',
-              fontSize: 14,
-              fontFamily: 'inherit',
-              outline: 'none',
-              minWidth: 100,
-              height: 42
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginBottom: search ? "0.75rem" : 0,
             }}
           >
-            <option value="all">All</option>
-            <option value="10">Top 10</option>
-            <option value="50">Top 50</option>
-          </select>
-
-          <div style={{ position: 'relative', flexGrow: 1 }}>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              placeholder="🔍 Search a famous person..."
+            <select
+              value={maxPeopleCount}
+              onChange={(e) => setMaxPeopleCount(e.target.value)}
               style={{
-                width: '85%',
-                padding: '0.6rem 2.5rem 0.6rem 1rem',
+                padding: "0.6rem 0.75rem",
                 borderRadius: 6,
-                border: '1px solid #555',
-                color: '#fff',
-                fontSize: 16,
-                outline: 'none',
-                fontFamily: 'inherit',
-                backgroundColor: 'rgba(30, 30, 30, 0.9)',
-                boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+                border: "1px solid #555",
+                backgroundColor: "#1e1e1e",
+                color: "#fff",
+                fontSize: 14,
+                fontFamily: "inherit",
+                outline: "none",
+                minWidth: 100,
+                height: 42,
               }}
-            />
-            {search && (
-              <button
-                onClick={clearSearch}
-                style={{
-                  position: 'absolute',
-                  right: 10,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'transparent',
-                  border: 'none',
-                  fontSize: 18,
-                  color: '#aaa',
-                  cursor: 'pointer',
-                  padding: 0,
-                  lineHeight: 1
-                }}
-                aria-label="Clear search"
-              >
-                &times;
-              </button>
-            )}
-          </div>
-        </div>
+            >
+              <option value="all">All</option>
+              <option value="10">Top 10</option>
+              <option value="50">Top 50</option>
+            </select>
 
-        {/* Search result list */}
-        {search && (
-          <ul className="custom-scrollbar" style={{
-            listStyle: 'none',
-            padding: 0,
-            maxHeight: 200,
-            overflowY: 'auto',
-            borderRadius: 6,
-            backgroundColor: '#111',
-            border: '1px solid #333'
-          }}>
-            {filteredPeople.map((p, idx) => (
-              <li key={idx}
+            <div style={{ position: "relative", flexGrow: 1 }}>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="🔍 Search a famous person..."
+                style={{
+                  width: "85%",
+                  padding: "0.6rem 2.5rem 0.6rem 1rem",
+                  borderRadius: 6,
+                  border: "1px solid #555",
+                  color: "#fff",
+                  fontSize: 16,
+                  outline: "none",
+                  fontFamily: "inherit",
+                  backgroundColor: "rgba(30, 30, 30, 0.9)",
+                  boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                }}
+              />
+              {search && (
+                <button
+                  onClick={clearSearch}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "transparent",
+                    border: "none",
+                    fontSize: 18,
+                    color: "#aaa",
+                    cursor: "pointer",
+                    padding: 0,
+                    lineHeight: 1,
+                  }}
+                  aria-label="Clear search"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Search result list */}
+          {search && (
+            <ul
+              className="custom-scrollbar"
+              style={{
+                listStyle: "none",
+                padding: 0,
+                maxHeight: 200,
+                overflowY: "auto",
+                borderRadius: 6,
+                backgroundColor: "#111",
+                border: "1px solid #333",
+              }}
+            >
+              {filteredPeople.map((p, idx) => (
+                <li
+                  key={idx}
                   onClick={() => setActivePerson(p)}
                   onMouseEnter={() => setHoveredPerson(p)}
                   onMouseLeave={() => setHoveredPerson(null)}
                   style={{
-                    padding: '0.6rem 1rem',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #222',
-                    color: '#eee',
-                    background: hoveredPerson === p ? '#222' : 'transparent',
-                    transition: 'background-color 0.3s ease, transform 0.2s ease'
-                  }}>
-                {p.name}
-              </li>
-            ))}
-            {filteredPeople.length === 0 && (
-              <li style={{ padding: '0.5rem 1rem', color: '#777' }}>No results</li>
-            )}
-          </ul>
-        )}
-      </div>}
+                    padding: "0.6rem 1rem",
+                    cursor: "pointer",
+                    borderBottom: "1px solid #222",
+                    color: "#eee",
+                    background: hoveredPerson === p ? "#222" : "transparent",
+                    transition:
+                      "background-color 0.3s ease, transform 0.2s ease",
+                  }}
+                >
+                  {p.name}
+                </li>
+              ))}
+              {filteredPeople.length === 0 && (
+                <li style={{ padding: "0.5rem 1rem", color: "#777" }}>
+                  No results
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
 
-
-      <div style={{ width: '100%', height: '100vh' }}>
-        <MapContainer bounds={ukrBounds} style={{ height: '100vh', width: '100%' }}>
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; OpenStreetMap contributors'
-          />
-          {filteredPeople.map((person, idx) => {
-            if (person.birthplace.lat === undefined || person.birthplace.lng === undefined)
-              return null;
-            return (
-            <CircleMarker
-              key={idx}
-              center={[person.birthplace.lat, person.birthplace.lng]}
-              radius={(hoveredPerson === person ? 6 : 2.5) + Math.sqrt(person.rating)} // adjust size based on rating
-              fillColor={hoveredPerson === person ? 'orange' : 'blue'}
-              color="white"
-              fillOpacity={0.8}
-              style={{ transition: 'all 0.3s ease' }}
-              eventHandlers={{
-                mouseover: (e) => e.target.setStyle({ fillColor: 'yellow', radius: 5 }),
-                mouseout: (e) => e.target.setStyle({ fillColor: 'blue', radius: 2.5 + Math.sqrt(person.rating) })
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 140,
+          zIndex: 1000,
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        {userRole !== "guest" ? (
+          <div
+            style={{
+              background: "rgba(30,30,30,0.9)",
+              padding: "0.4rem 1rem",
+              borderRadius: 6,
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              border: "1px solid #555",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <span style={{ fontSize: 14 }}>
+              👤 {userName} ({userRole})
+            </span>
+            <button
+              onClick={onLogoutClick}
+              style={{
+                background: "#c62828",
+                border: "none",
+                color: "white",
+                borderRadius: 4,
+                cursor: "pointer",
+                padding: "4px 8px",
+                fontSize: 12,
               }}
             >
-              {/* Tooltip for hover */}
-              <Tooltip direction="top" offset={[-10, -10]} opacity={1}>
-                <div style={{ fontSize: '14px', textAlign: 'left' }}>
-                  <strong>{person.name}</strong><br />
-                  {person.birthdate && (
-                    <span style={{ fontSize: '12px', color: '#ccc' }}>
-                      Born: {person.birthdate}
-                    </span>
-                  )}
-                  <br />
-                  {person.birthplace?.birthplace && (
-                    <span style={{ fontSize: '12px', color: '#ccc' }}>
-                      Place: {person.birthplace.birthplace}
-                    </span>
-                  )}
-                </div>
-              </Tooltip>
+              Logout
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onLoginClick}
+            style={{
+              background: "#1565c0",
+              color: "white",
+              border: "1px solid #0d47a1",
+              borderRadius: 6,
+              padding: "0.5rem 1rem",
+              cursor: "pointer",
+              fontSize: 14,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            }}
+          >
+            Log In
+          </button>
+        )}
+      </div>
 
-              <Popup minWidth={350} className="popup-fade">
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
-                  {person.image && (
-                    <img
-                      src={person.image}
-                      alt={person.name}
-                      style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 6, marginRight: 10 }}
-                    />
-                  )}
-                  <div>
-                    <h3 style={{ margin: '0 0 5px 0' }}>
-                      <a
-                        href={`https://uk.wikipedia.org/?curid=${person.id}`}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        style={{ textDecoration: 'none' }}
-                      >
-                        {person.name}
-                      </a>
-                    </h3>
-                    {userRole !== 'guest' && <button
-                      onClick={() => handleRemovePerson(person)}
-                      style={{
-                        background: 'rgba(255, 75, 75, 0.1)',
-                        border: '1px solid rgba(255, 75, 75, 0.3)',
-                        color: '#ff4b4b',
-                        borderRadius: '4px',
-                        padding: '4px 8px',
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        flexShrink: 0,
-                        ':hover': {
-                          background: 'rgba(255, 75, 75, 0.2)',
-                          borderColor: 'rgba(255, 75, 75, 0.5)'
-                        }
-                      }}
-                      title="Remove from map"
-                    >
-                      × Remove
-                    </button>}
-                    {userRole !== 'guest' && person.summary && (
-                      <p style={{ margin: 0, fontSize: '0.9em', lineHeight: 1.4 }}>{person.summary.length > 550 ? person.summary.slice(0, 550) + '...' : person.summary}</p>
-                    )}
+      <div style={{ width: "100%", height: "100vh" }}>
+        <MapContainer
+          bounds={ukrBounds}
+          style={{ height: "100vh", width: "100%" }}
+        >
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+          {filteredPeople.map((person, idx) => {
+            if (!person.lat || !person.lng) return null;
+            return (
+              <CircleMarker
+                key={idx}
+                center={[person.lat, person.lng]}
+                radius={
+                  (hoveredPerson === person ? 6 : 2.5) +
+                  Math.sqrt(person.rating)
+                } // adjust size based on rating
+                fillColor={hoveredPerson === person ? "orange" : "blue"}
+                color="white"
+                fillOpacity={0.8}
+                style={{ transition: "all 0.3s ease" }}
+                eventHandlers={{
+                  mouseover: (e) =>
+                    e.target.setStyle({ fillColor: "yellow", radius: 5 }),
+                  mouseout: (e) =>
+                    e.target.setStyle({
+                      fillColor: "blue",
+                      radius: 2.5 + Math.sqrt(person.rating),
+                    }),
+                }}
+              >
+                {/* Tooltip for hover */}
+                <Tooltip direction="top" offset={[-10, -10]} opacity={1}>
+                  <div style={{ fontSize: "14px", textAlign: "left" }}>
+                    <strong>{person.name}</strong>
+                    <br />
                     {person.birthdate && (
-                      <p style={{ margin: '5px 0 0 0', fontSize: '0.8em', color: '#888' }}>
-                        Birthdate: {person.birthdate}
-                      </p>
+                      <span style={{ fontSize: "12px", color: "#ccc" }}>
+                        Born: {person.birthdate}
+                      </span>
                     )}
-                    {person.birthplace.birthplace && (
-                      <p style={{ margin: '5px 0 0 0', fontSize: '0.8em', color: '#888' }}>
-                        Birthplace: {person.birthplace.birthplace}
-                      </p>
+                    <br />
+                    {person.birthPlace && (
+                      <span style={{ fontSize: "12px", color: "#ccc" }}>
+                        Place: {person.birthPlace}
+                      </span>
                     )}
                   </div>
-                </div>
-              </Popup>
-            </CircleMarker>
-          )})}
+                </Tooltip>
+
+                <Popup minWidth={350} className="popup-fade">
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    {person.imageUrl && (
+                      <img
+                        src={person.imageUrl}
+                        alt={person.name}
+                        style={{
+                          width: 100,
+                          height: 100,
+                          objectFit: "cover",
+                          borderRadius: 6,
+                          marginRight: 10,
+                        }}
+                      />
+                    )}
+                    <div>
+                      <h3 style={{ margin: "0 0 5px 0" }}>
+                        <a
+                          href={`https://uk.wikipedia.org/?curid=${person.wikiPageId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: "none" }}
+                        >
+                          {person.name}
+                        </a>
+                      </h3>
+                      {userRole !== "guest" && (
+                        <button
+                          onClick={() => handleRemovePerson(person)}
+                          style={{
+                            background: "rgba(255, 75, 75, 0.1)",
+                            border: "1px solid rgba(255, 75, 75, 0.3)",
+                            color: "#ff4b4b",
+                            borderRadius: "4px",
+                            padding: "4px 8px",
+                            fontSize: "12px",
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            flexShrink: 0,
+                            ":hover": {
+                              background: "rgba(255, 75, 75, 0.2)",
+                              borderColor: "rgba(255, 75, 75, 0.5)",
+                            },
+                          }}
+                          title="Remove from map"
+                        >
+                          × Remove
+                        </button>
+                      )}
+                      {person.summary && (
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "0.9em",
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {person.summary.length > 550
+                            ? person.summary.slice(0, 550) + "..."
+                            : person.summary}
+                        </p>
+                      )}
+                      {person.birthDate && (
+                        <p
+                          style={{
+                            margin: "5px 0 0 0",
+                            fontSize: "0.8em",
+                            color: "#888",
+                          }}
+                        >
+                          Birthdate: {person.birthDate}
+                        </p>
+                      )}
+                      {person.birthPlace && (
+                        <p
+                          style={{
+                            margin: "5px 0 0 0",
+                            fontSize: "0.8em",
+                            color: "#888",
+                          }}
+                        >
+                          Birthplace: {person.birthPlace}
+                        </p>
+                      )}
+
+                      {person.views > 0 && (
+                        <p
+                          style={{
+                            margin: "5px 0 0 0",
+                            fontSize: "0.8em",
+                            color: "#666",
+                          }}
+                        >
+                          👀 {person.views} views
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
           {activePerson && <JumpToPerson person={activePerson} />}
-          <ResetViewButton/>
+          <ResetViewButton />
         </MapContainer>
       </div>
 
-      {showRoleModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            background: 'linear-gradient(145deg, #1c1c1c, #292929)',
-            color: 'white',
-            padding: '2rem',
-            borderRadius: 16,
-            boxShadow: '0 12px 24px rgba(0,0,0,0.5)',
-            textAlign: 'center',
-            minWidth: 320,
-            maxWidth: '90%',
-            animation: 'fadeIn 0.3s ease-in-out'
-          }}>
-            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.4rem' }}>👋 Who are you?</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              <RoleButton role="researcher" onClick={handleSelectRole}>🧑‍🔬 Researcher</RoleButton>
-              <RoleButton role="teacher" onClick={handleSelectRole}>🧑‍🏫 Teacher</RoleButton>
-              <RoleButton role="student" onClick={handleSelectRole}>🎓 Student</RoleButton>
-              <RoleButton role="guest" onClick={handleSelectRole}>👀 Guest</RoleButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {userRole && (
-        <div style={{
-          position: 'fixed',
-          bottom: 12,
-          left: 12,
-          background: '#1c1c1c',
-          color: '#fff',
-          padding: '0.5rem 1rem',
-          borderRadius: 10,
-          fontSize: 14,
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-          border: '1px solid #333'
-        }}>
-          <span style={{ opacity: 0.9 }}>Role: {roleEmoji(userRole)} {capitalize(userRole)}</span>
-          <button onClick={() => setShowRoleModal(true)} style={{
-            background: '#2d2d2d',
-            border: '1px solid #444',
-            color: '#ccc',
-            padding: '0.25rem 0.6rem',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontSize: 12,
-            transition: 'all 0.2s ease'
-          }}
-            onMouseEnter={e => e.currentTarget.style.background = '#444'}
-            onMouseLeave={e => e.currentTarget.style.background = '#2d2d2d'}
-          >
-            Change
-          </button>
-        </div>
-      )}
-
-      {userRole === 'researcher' && filteredPeople.length > 0 && (
+      {userRole === "researcher" && filteredPeople.length > 0 && (
         <button
-          title='Export filtered people data as JSON'
+          title="Export filtered people data as JSON"
           onClick={() => {
-            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(filteredPeople, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute('href', dataStr);
-            downloadAnchor.setAttribute('download', 'notable-people.json');
+            const dataStr =
+              "data:text/json;charset=utf-8," +
+              encodeURIComponent(JSON.stringify(filteredPeople, null, 2));
+            const downloadAnchor = document.createElement("a");
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "notable-people.json");
             downloadAnchor.click();
           }}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 20,
             left: 80,
-            padding: '0.5rem 1rem',
+            padding: "0.5rem 1rem",
             fontSize: 14,
-            backgroundColor: '#222',
-            color: '#fff',
-            border: '1px solid #555',
+            backgroundColor: "#222",
+            color: "#fff",
+            border: "1px solid #555",
             borderRadius: 6,
-            cursor: 'pointer',
+            cursor: "pointer",
             zIndex: 1000,
           }}
         >
@@ -482,53 +579,71 @@ const Map = () => {
         </button>
       )}
 
-      {userRole === 'teacher' && <TeachingPrompt />}
-      {userRole === 'teacher' && (
-        <div style={{position: 'absolute',
-          top: 20,
-          left: 80,
-          padding: '1rem 1.5rem',
-          fontSize: '14px',
-          backgroundColor: '#222',
-          color: '#fff',
-          border: '1px solid #555',
-          borderRadius: '8px',
-          zIndex: 1000,
-          width: 'fit-content',
-          boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-        }}>
-          <button onClick={() => setShowQuestions(prev => !prev)}
+      {userRole === "teacher" && <TeachingPrompt />}
+      {userRole === "teacher" && (
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            left: 80,
+            padding: "1rem 1.5rem",
+            fontSize: "14px",
+            backgroundColor: "#222",
+            color: "#fff",
+            border: "1px solid #555",
+            borderRadius: "8px",
+            zIndex: 1000,
+            width: "fit-content",
+            boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          <button
+            onClick={() => setShowQuestions((prev) => !prev)}
             style={{
-              padding: '0.6rem 1.2rem',
-              fontSize: '14px',
-              backgroundColor: '#333', 
-              color: '#fff',
-              border: '1px solid #444',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s ease-in-out',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
+              padding: "0.6rem 1.2rem",
+              fontSize: "14px",
+              backgroundColor: "#333",
+              color: "#fff",
+              border: "1px solid #444",
+              borderRadius: "6px",
+              cursor: "pointer",
+              transition: "background-color 0.3s ease-in-out",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
             }}
           >
-            {showQuestions ? '🔽 Hide Questions' : '❓ Suggested Questions'}
+            {showQuestions ? "🔽 Hide Questions" : "❓ Suggested Questions"}
           </button>
           {showQuestions && (
-            <ul style={{
-              marginTop: '0.5rem',
-              padding: '0.5rem 0',
-              listStyleType: 'disc',
-              color: '#ddd',
-              marginLeft: '1.5rem',
-            }}>
-              <li style={{ marginBottom: '0.8rem' }}>Who on the map lived during the same era?</li>
-              <li style={{ marginBottom: '0.8rem' }}>Which of these people contributed to Ukrainian independence?</li>
-              <li style={{ marginBottom: '0.8rem' }}>Can you find someone born near your city?</li>
-              <li style={{ marginBottom: '0.8rem' }}>Who influenced Ukrainian culture the most?</li>
-              <li style={{ marginBottom: '0.8rem' }}>Which figures are linked to Ukrainian literature?</li>
-              <li style={{ marginBottom: '0.8rem' }}>Who were the key figures during the Cossack Hetmanate?</li>
+            <ul
+              style={{
+                marginTop: "0.5rem",
+                padding: "0.5rem 0",
+                listStyleType: "disc",
+                color: "#ddd",
+                marginLeft: "1.5rem",
+              }}
+            >
+              <li style={{ marginBottom: "0.8rem" }}>
+                Who on the map lived during the same era?
+              </li>
+              <li style={{ marginBottom: "0.8rem" }}>
+                Which of these people contributed to Ukrainian independence?
+              </li>
+              <li style={{ marginBottom: "0.8rem" }}>
+                Can you find someone born near your city?
+              </li>
+              <li style={{ marginBottom: "0.8rem" }}>
+                Who influenced Ukrainian culture the most?
+              </li>
+              <li style={{ marginBottom: "0.8rem" }}>
+                Which figures are linked to Ukrainian literature?
+              </li>
+              <li style={{ marginBottom: "0.8rem" }}>
+                Who were the key figures during the Cossack Hetmanate?
+              </li>
               <li>Can you find someone who contributed to Ukrainian art?</li>
             </ul>
           )}
@@ -536,113 +651,127 @@ const Map = () => {
       )}
 
       {/* Removed People Panel */}
-      {userRole !== 'guest' && removedPeople.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          bottom: 40,
-          right: 20,
-          zIndex: 1000,
-          width: showRemovedList ? 300 : 50,
-          height: showRemovedList ? 'auto' : 50,
-          maxHeight: '60vh',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease',
-          backgroundColor: 'rgba(40, 40, 40, 0.9)',
-          borderRadius: 8,
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-          backdropFilter: 'blur(6px)',
-          border: '1px solid #444'
-        }}>
-          <div 
+      {userRole !== "guest" && removedPeople.length > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 40,
+            right: 20,
+            zIndex: 1000,
+            width: showRemovedList ? 300 : 50,
+            height: showRemovedList ? "auto" : 50,
+            maxHeight: "60vh",
+            overflow: "hidden",
+            transition: "all 0.3s ease",
+            backgroundColor: "rgba(40, 40, 40, 0.9)",
+            borderRadius: 8,
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.3)",
+            backdropFilter: "blur(6px)",
+            border: "1px solid #444",
+          }}
+        >
+          <div
             onClick={() => setShowRemovedList(!showRemovedList)}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0.6rem',
-              cursor: 'pointer',
-              backgroundColor: showRemovedList ? '#2d2d2d' : 'transparent',
-              borderBottom: showRemovedList ? '1px solid #3a3a3a' : 'none'
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0.6rem",
+              cursor: "pointer",
+              backgroundColor: showRemovedList ? "#2d2d2d" : "transparent",
+              borderBottom: showRemovedList ? "1px solid #3a3a3a" : "none",
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8' }}>
-              <div style={{
-                width: 30,
-                height: 30,
-                borderRadius: 6,
-                background: 'rgba(255, 75, 75, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8" }}>
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 6,
+                  background: "rgba(255, 75, 75, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <span style={{ fontSize: 16 }}>🗑️</span>
               </div>
               {showRemovedList && (
-                <span style={{ fontWeight: '500', fontSize: 14, color: '#eee' }}>
+                <span
+                  style={{ fontWeight: "500", fontSize: 14, color: "#eee" }}
+                >
                   Hidden ({removedPeople.length})
                 </span>
               )}
             </div>
             {showRemovedList && (
-              <span style={{ fontSize: 12, color: '#999', marginRight: 4 }}>
-                {showRemovedList ? '▼' : '▲'}
+              <span style={{ fontSize: 12, color: "#999", marginRight: 4 }}>
+                {showRemovedList ? "▼" : "▲"}
               </span>
             )}
           </div>
 
           {showRemovedList && (
-            <div style={{
-              padding: '4px 0',
-              overflowY: 'auto',
-              maxHeight: 'calc(50vh - 50px)'
-            }}>
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0
-              }}>
+            <div
+              style={{
+                padding: "4px 0",
+                overflowY: "auto",
+                maxHeight: "calc(50vh - 50px)",
+              }}
+            >
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                }}
+              >
                 {removedPeople.map((person, idx) => (
-                  <li 
+                  <li
                     key={idx}
                     style={{
-                      padding: '8px 12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderBottom: '1px solid #333',
-                      transition: 'background-color 0.2s',
-                      ':hover': {
-                        backgroundColor: '#2d2d2d'
-                      }
+                      padding: "8px 12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "1px solid #333",
+                      transition: "background-color 0.2s",
+                      ":hover": {
+                        backgroundColor: "#2d2d2d",
+                      },
                     }}
                   >
-                    <span style={{ 
-                      fontSize: 13,
-                      color: '#ddd',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: 180
-                    }}>{person.name}</span>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: "#ddd",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 180,
+                      }}
+                    >
+                      {person.name}
+                    </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRestorePerson(person);
                       }}
                       style={{
-                        background: 'rgba(74, 144, 226, 0.1)',
-                        border: '1px solid rgba(74, 144, 226, 0.3)',
-                        color: '#4a90e2',
+                        background: "rgba(74, 144, 226, 0.1)",
+                        border: "1px solid rgba(74, 144, 226, 0.3)",
+                        color: "#4a90e2",
                         borderRadius: 4,
-                        padding: '4px 8px',
+                        padding: "4px 8px",
                         fontSize: 12,
                         fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        ':hover': {
-                          background: 'rgba(74, 144, 226, 0.2)',
-                          borderColor: 'rgba(74, 144, 226, 0.5)'
-                        }
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        ":hover": {
+                          background: "rgba(74, 144, 226, 0.2)",
+                          borderColor: "rgba(74, 144, 226, 0.5)",
+                        },
                       }}
                     >
                       Restore
@@ -656,6 +785,6 @@ const Map = () => {
       )}
     </div>
   );
-}
+};
 
 export default Map;
