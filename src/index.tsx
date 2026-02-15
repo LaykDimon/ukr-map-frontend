@@ -4,7 +4,6 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './index.css';
 
 const root = ReactDOM.createRoot(
@@ -19,6 +18,3 @@ root.render(
     </ErrorBoundary>
   </React.StrictMode>,
 );
-
-// Register service worker for PWA offline support
-serviceWorkerRegistration.register();
