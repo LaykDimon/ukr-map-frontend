@@ -3,3 +3,8 @@ build
 .env
 *.md
 .git
+src/**/*.test.tsx
+src/**/*.test.ts
+src/setupTests.ts
+cypress
+**/*.stories.tsx
