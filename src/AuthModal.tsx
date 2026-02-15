@@ -1,25 +1,32 @@
-import { useState } from "react";
-import axios from "axios";
-import "./AuthModal.css";
+import React, { useState, FormEvent, MouseEvent } from 'react';
+import axios from 'axios';
+import './AuthModal.css';
+import { User } from './types';
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const AuthModal = ({ isOpen, onClose, onLogin }) => {
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onLogin: (user: User, token: string) => void;
+}
+
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const [isRegistering, setIsRegistering] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setIsLoading(true);
 
-    const endpoint = isRegistering ? "/auth/register" : "/auth/login";
+    const endpoint = isRegistering ? '/auth/register' : '/auth/login';
     const payload = isRegistering
       ? { email, password, username }
       : { email, password };
@@ -32,22 +39,19 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
       }
 
       const { accessToken, user } = response.data;
-      localStorage.setItem("token", accessToken);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      onLogin(user);
-      onClose();
-    } catch (err) {
-      const msg = err.response?.data?.message;
+      onLogin(user, accessToken);
+    } catch (err: unknown) {
+      const msg =
+        axios.isAxiosError(err) ? err.response?.data?.message : undefined;
       setError(
-        Array.isArray(msg) ? msg.join(", ") : msg || "Something went wrong",
+        Array.isArray(msg) ? msg.join(', ') : msg || 'Something went wrong',
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
@@ -55,7 +59,7 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2>{isRegistering ? "Створити акаунт" : "Вхід"}</h2>
+          <h2>{isRegistering ? 'Створити акаунт' : 'Вхід'}</h2>
           <button className="close-x-btn" onClick={onClose}>
             &times;
           </button>
@@ -99,10 +103,10 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
 
           <button type="submit" className="submit-btn" disabled={isLoading}>
             {isLoading
-              ? "Processing..."
+              ? 'Processing...'
               : isRegistering
-                ? "Зареєструватися"
-                : "Увійти"}
+                ? 'Зареєструватися'
+                : 'Увійти'}
           </button>
         </form>
 
@@ -111,13 +115,13 @@ const AuthModal = ({ isOpen, onClose, onLogin }) => {
             className="switch-btn"
             onClick={() => {
               setIsRegistering(!isRegistering);
-              setError("");
+              setError('');
             }}
             disabled={isLoading}
           >
             {isRegistering
-              ? "Вже є акаунт? Увійти"
-              : "Немає акаунту? Реєстрація"}
+              ? 'Вже є акаунт? Увійти'
+              : 'Немає акаунту? Реєстрація'}
           </button>
         </div>
       </div>

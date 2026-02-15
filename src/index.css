@@ -71,6 +71,59 @@ body {
   background-color: #666;
 }
 
+/* Hide number input spinners globally */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.search-result-item {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #222;
+  color: #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.search-result-item:hover {
+  background: #222;
+}
+
+/* Make Leaflet layer control visible on dark map */
+.leaflet-control-layers {
+  background: rgba(30, 30, 30, 0.92) !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px !important;
+  color: #eee !important;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+.leaflet-control-layers-toggle {
+  background-color: rgba(30, 30, 30, 0.92) !important;
+  border: 1px solid #444 !important;
+  border-radius: 6px !important;
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.leaflet-control-layers-expanded {
+  padding: 8px 12px !important;
+}
+
+.leaflet-control-layers label {
+  color: #ccc !important;
+  font-size: 13px;
+}
+
 .popup-fade {
   animation: fadeIn 0.7s ease-in;
 }
