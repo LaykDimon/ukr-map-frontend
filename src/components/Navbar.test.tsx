@@ -8,6 +8,13 @@ import personsReducer from '../store/personsSlice';
 import filtersReducer from '../store/filtersSlice';
 import Navbar from './Navbar';
 
+// Build a fake JWT with a far-future expiry so isTokenExpired() returns false.
+function makeFakeJwt() {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(JSON.stringify({ sub: 1, exp: Math.floor(Date.now() / 1000) + 86400 }));
+  return `${header}.${payload}.fake-signature`;
+}
+
 function createTestStore(preloadedState?: any) {
   return configureStore({
     reducer: {
@@ -48,7 +55,7 @@ describe('Navbar', () => {
     renderWithProviders(<Navbar />, {
       auth: {
         user: { id: 1, email: 'a@b.com', username: 'admin', role: 'admin' },
-        token: 'token',
+        token: makeFakeJwt(),
       },
     });
     expect(screen.getByText('Admin')).toBeInTheDocument();
@@ -58,7 +65,7 @@ describe('Navbar', () => {
     renderWithProviders(<Navbar />, {
       auth: {
         user: { id: 2, email: 's@b.com', username: 'student', role: 'student' },
-        token: 'token',
+        token: makeFakeJwt(),
       },
     });
     expect(screen.queryByText('Admin')).not.toBeInTheDocument();

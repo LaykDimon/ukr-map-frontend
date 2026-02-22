@@ -15,6 +15,7 @@ const initialState = {
   items: [],
   removedIds: [] as string[],
   loading: false,
+  loadingProgress: null,
   error: null,
   searchResults: [],
   searchLoading: false,
