@@ -1,17 +1,19 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
-import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../store/authSlice';
-import personsReducer from '../store/personsSlice';
-import filtersReducer from '../store/filtersSlice';
-import Navbar from './Navbar';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { MemoryRouter } from "react-router-dom";
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "../store/authSlice";
+import personsReducer from "../store/personsSlice";
+import filtersReducer from "../store/filtersSlice";
+import Navbar from "./Navbar";
 
 // Build a fake JWT with a far-future expiry so isTokenExpired() returns false.
 function makeFakeJwt() {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({ sub: 1, exp: Math.floor(Date.now() / 1000) + 86400 }));
+  const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const payload = btoa(
+    JSON.stringify({ sub: 1, exp: Math.floor(Date.now() / 1000) + 86400 }),
+  );
   return `${header}.${payload}.fake-signature`;
 }
 
@@ -26,10 +28,7 @@ function createTestStore(preloadedState?: any) {
   });
 }
 
-function renderWithProviders(
-  ui: React.ReactElement,
-  preloadedState?: any,
-) {
+function renderWithProviders(ui: React.ReactElement, preloadedState?: any) {
   const store = createTestStore(preloadedState);
   return render(
     <Provider store={store}>
@@ -38,36 +37,36 @@ function renderWithProviders(
   );
 }
 
-describe('Navbar', () => {
-  it('should render Map, Statistics, and Timeline links', () => {
+describe("Navbar", () => {
+  it("should render Map, Statistics, and Timeline links", () => {
     renderWithProviders(<Navbar />);
-    expect(screen.getByText('Map')).toBeInTheDocument();
-    expect(screen.getByText('Statistics')).toBeInTheDocument();
-    expect(screen.getByText('Timeline')).toBeInTheDocument();
+    expect(screen.getByText("Map")).toBeInTheDocument();
+    expect(screen.getByText("Statistics")).toBeInTheDocument();
+    expect(screen.getByText("Timeline")).toBeInTheDocument();
   });
 
-  it('should NOT show Admin link for non-admin users', () => {
+  it("should NOT show Admin link for non-admin users", () => {
     renderWithProviders(<Navbar />);
-    expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });
 
-  it('should show Admin link for admin users', () => {
+  it("should show Admin link for admin users", () => {
     renderWithProviders(<Navbar />, {
       auth: {
-        user: { id: 1, email: 'a@b.com', username: 'admin', role: 'admin' },
+        user: { id: 1, email: "a@b.com", username: "admin", role: "admin" },
         token: makeFakeJwt(),
       },
     });
-    expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.getByText("Admin")).toBeInTheDocument();
   });
 
-  it('should NOT show Admin link for student users', () => {
+  it("should NOT show Admin link for student users", () => {
     renderWithProviders(<Navbar />, {
       auth: {
-        user: { id: 2, email: 's@b.com', username: 'student', role: 'student' },
+        user: { id: 2, email: "s@b.com", username: "student", role: "student" },
         token: makeFakeJwt(),
       },
     });
-    expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });
 });
