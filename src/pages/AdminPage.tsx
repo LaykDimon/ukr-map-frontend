@@ -122,12 +122,13 @@ const AdminPage: React.FC = () => {
 
   useEffect(() => {
     if (userRole !== "admin" || !token) return;
-    dispatch(fetchPersons());
+    if (persons.length === 0) dispatch(fetchPersons());
     api
       .get("/import-logs")
       .then((res) => setLogs(res.data))
       .catch((err) => console.error("Failed to load import logs:", err));
     loadProposedEdits(editsFilter || undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRole, token, dispatch, loadProposedEdits, editsFilter]);
 
   // Lock body scroll while form modal is open
