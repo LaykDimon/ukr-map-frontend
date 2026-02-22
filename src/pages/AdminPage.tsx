@@ -408,7 +408,6 @@ const AdminPage: React.FC = () => {
                       textAlign: "left",
                     }}
                   >
-                    <th style={{ padding: "8px 6px" }}>ID</th>
                     <th style={{ padding: "8px 6px" }}>Username</th>
                     <th style={{ padding: "8px 6px" }}>Email</th>
                     <th style={{ padding: "8px 6px" }}>Role</th>
@@ -424,14 +423,6 @@ const AdminPage: React.FC = () => {
                         borderBottom: "1px solid var(--border-faint)",
                       }}
                     >
-                      <td
-                        style={{
-                          padding: "8px 6px",
-                          color: "var(--text-muted)",
-                        }}
-                      >
-                        {u.id}
-                      </td>
                       <td style={{ padding: "8px 6px", fontWeight: 500 }}>
                         {u.username}
                         {currentUser?.id === u.id && (
