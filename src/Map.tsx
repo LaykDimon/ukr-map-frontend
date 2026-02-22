@@ -183,7 +183,10 @@ const MapView: React.FC<MapProps> = ({
               animation: "spin 0.8s linear infinite",
             }}
           />
-          Loading {persons.length > 0 ? `${persons.length.toLocaleString()} persons…` : "persons…"}
+          Loading{" "}
+          {persons.length > 0
+            ? `${persons.length.toLocaleString()} persons…`
+            : "persons…"}
         </div>
       )}
 
