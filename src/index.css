@@ -1,11 +1,93 @@
+/* ── Theme CSS Variables ── */
+:root {
+  /* Light theme (default) */
+  --bg-page: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-input: #f5f5f5;
+  --bg-hover: #e8e8e8;
+  --bg-glass: rgba(255, 255, 255, 0.92);
+  --bg-glass-hover: rgba(240, 240, 240, 0.95);
+  --bg-navbar: rgba(255, 255, 255, 0.95);
+  --bg-list: #f8f8f8;
+  --text-primary: #1a1a1a;
+  --text-secondary: #444;
+  --text-tertiary: #666;
+  --text-muted: #888;
+  --text-faint: #aaa;
+  --text-link: #0070d2;
+  --border-primary: #e0e0e0;
+  --border-secondary: #d0d0d0;
+  --border-tertiary: #bbb;
+  --border-faint: #eee;
+  --border-search: #e5e5e5;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-heavy: rgba(0, 0, 0, 0.12);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --accent: #0088fe;
+  --accent-hover: #0070d2;
+  --accent-bg: rgba(0, 136, 254, 0.08);
+  --danger: #e53935;
+  --danger-bg: rgba(229, 57, 53, 0.08);
+  --success: #00a67e;
+  --success-bg: rgba(0, 166, 126, 0.08);
+  --warning: #e67e22;
+  --warning-bg: rgba(230, 126, 34, 0.08);
+  --scrollbar-track: #f0f0f0;
+  --scrollbar-thumb: #ccc;
+  --scrollbar-thumb-hover: #aaa;
+}
+
+[data-theme="dark"] {
+  --bg-page: #111;
+  --bg-card: #1e1e1e;
+  --bg-input: #222;
+  --bg-hover: #2a2a2a;
+  --bg-glass: rgba(30, 30, 30, 0.92);
+  --bg-glass-hover: rgba(50, 50, 50, 0.95);
+  --bg-navbar: rgba(20, 20, 20, 0.95);
+  --bg-list: #111;
+  --text-primary: #eee;
+  --text-secondary: #ccc;
+  --text-tertiary: #aaa;
+  --text-muted: #888;
+  --text-faint: #666;
+  --text-link: #4dabf7;
+  --border-primary: #333;
+  --border-secondary: #444;
+  --border-tertiary: #555;
+  --border-faint: #2a2a2a;
+  --border-search: #222;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-heavy: rgba(0, 0, 0, 0.5);
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --accent: #0088fe;
+  --accent-hover: #4dabf7;
+  --accent-bg: rgba(0, 136, 254, 0.15);
+  --danger: #ff4b4b;
+  --danger-bg: rgba(255, 75, 75, 0.15);
+  --success: #00c49f;
+  --success-bg: rgba(0, 196, 159, 0.15);
+  --warning: #f39c12;
+  --warning-bg: rgba(243, 156, 18, 0.15);
+  --scrollbar-track: #1a1a1a;
+  --scrollbar-thumb: #444;
+  --scrollbar-thumb-hover: #666;
+}
+
 body {
   margin: 0;
-  font-family: 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  transition:
+    background-color 0.25s,
+    color 0.25s;
 }
+
 .arrow-container {
   display: flex;
   top: 60px;
@@ -17,7 +99,7 @@ body {
   height: 100%;
 }
 .tab:hover {
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 5px var(--shadow);
   transition: box-shadow 0.3s ease;
   z-index: 1100;
 }
@@ -31,21 +113,24 @@ body {
   left: 50px;
   top: 50%;
   transform: translateY(-50%);
-  background-color: #333;
-  color: #fff;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
   padding: 5px 10px;
   border-radius: 5px;
   white-space: nowrap;
   font-size: 12px;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, left 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    left 0.3s ease,
+    visibility 0.3s ease;
 }
 #map {
-  height: calc(100vh); /* Browser window height minus header height */
-  width: 100%; /* Full width */
-  position: relative; /* Make sure the map positioning is correct */
-  z-index: 0; /* Background so the map won't overlap other elements */
+  height: calc(100vh);
+  width: 100%;
+  position: relative;
+  z-index: 0;
 }
 
 #map path {
@@ -57,18 +142,18 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: var(--scrollbar-track);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #444;
+  background-color: var(--scrollbar-thumb);
   border-radius: 4px;
-  border: 2px solid #1a1a1a;
+  border: 2px solid var(--scrollbar-track);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #666;
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 /* Hide number input spinners globally */
@@ -84,8 +169,8 @@ input[type="number"] {
 .search-result-item {
   padding: 0.6rem 1rem;
   cursor: pointer;
-  border-bottom: 1px solid #222;
-  color: #eee;
+  border-bottom: 1px solid var(--border-search);
+  color: var(--text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -94,22 +179,22 @@ input[type="number"] {
 }
 
 .search-result-item:hover {
-  background: #222;
+  background: var(--bg-hover);
 }
 
-/* Make Leaflet layer control visible on dark map */
+/* Leaflet layer control */
 .leaflet-control-layers {
-  background: rgba(30, 30, 30, 0.92) !important;
-  border: 1px solid #444 !important;
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border-secondary) !important;
   border-radius: 8px !important;
-  color: #eee !important;
+  color: var(--text-primary) !important;
   backdrop-filter: blur(6px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 2px 8px var(--shadow) !important;
 }
 
 .leaflet-control-layers-toggle {
-  background-color: rgba(30, 30, 30, 0.92) !important;
-  border: 1px solid #444 !important;
+  background-color: var(--bg-glass) !important;
+  border: 1px solid var(--border-secondary) !important;
   border-radius: 6px !important;
   width: 36px !important;
   height: 36px !important;
@@ -120,8 +205,55 @@ input[type="number"] {
 }
 
 .leaflet-control-layers label {
-  color: #ccc !important;
+  color: var(--text-secondary) !important;
   font-size: 13px;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.leaflet-control-layers label span {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaflet-control-layers-selector {
+  margin: 0 !important;
+  accent-color: var(--accent);
+}
+
+/* Push Leaflet zoom control below the search bar area */
+.leaflet-top.leaflet-left .leaflet-control-zoom {
+  margin-top: 60px !important;
+  margin-left: 10px !important;
+}
+
+/* Theme-aware Leaflet zoom buttons */
+.leaflet-control-zoom a {
+  background-color: var(--bg-glass) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-secondary) !important;
+}
+.leaflet-control-zoom a:hover {
+  background-color: var(--bg-glass-hover) !important;
+}
+
+/* Theme-aware Leaflet popup */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: 0 3px 14px var(--shadow-heavy) !important;
+}
+.leaflet-popup-tip {
+  background: var(--bg-card) !important;
+}
+.leaflet-popup-content a {
+  color: var(--text-link) !important;
 }
 
 .popup-fade {
@@ -135,4 +267,66 @@ input[type="number"] {
   to {
     opacity: 1;
   }
+}
+
+/* ── Responsive: Tablet (≤768px) ── */
+@media (max-width: 768px) {
+  .search-panel-container {
+    width: calc(100% - 32px) !important;
+    max-width: 480px !important;
+    left: 16px !important;
+    transform: none !important;
+  }
+  .filter-panel-container {
+    width: calc(100% - 32px) !important;
+    max-width: 280px !important;
+    top: auto !important;
+    bottom: 70px !important;
+    left: 16px !important;
+  }
+  .user-bar-container {
+    top: auto !important;
+    bottom: 70px !important;
+    right: 16px !important;
+  }
+  .markers-toggle-btn {
+    top: auto !important;
+    bottom: 130px !important;
+    right: 16px !important;
+  }
+}
+
+/* ── Responsive: Mobile (≤480px) ── */
+@media (max-width: 480px) {
+  .search-panel-container {
+    width: calc(100% - 16px) !important;
+    left: 8px !important;
+    top: 8px !important;
+    padding: 8px 10px !important;
+  }
+  .search-panel-container select {
+    display: none;
+  }
+  .filter-panel-container {
+    width: calc(100% - 16px) !important;
+    max-width: none !important;
+    left: 8px !important;
+    bottom: 60px !important;
+    font-size: 12px !important;
+  }
+  .user-bar-container {
+    right: 8px !important;
+    bottom: 60px !important;
+  }
+  .markers-toggle-btn {
+    right: 8px !important;
+    bottom: 120px !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ── Body scroll lock when modal is open ── */
+body.modal-open {
+  overflow: hidden;
 }

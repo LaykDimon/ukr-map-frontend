@@ -1,14 +1,23 @@
-import React from 'react';
-import { TileLayer, LayersControl } from 'react-leaflet';
+import React from "react";
+import { TileLayer, LayersControl } from "react-leaflet";
+import { useTheme } from "../../store/themeContext";
 
 const { BaseLayer } = LayersControl;
 
 const LayerSwitcher: React.FC = () => {
+  const { theme } = useTheme();
+
+  const baseUrl =
+    theme === "dark"
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
   return (
-    <LayersControl position="topright">
-      <BaseLayer checked name="Dark">
+    <LayersControl position="bottomright">
+      <BaseLayer checked name="Default">
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          key={theme}
+          url={baseUrl}
           attribution="&copy; OpenStreetMap contributors &copy; CARTO"
         />
       </BaseLayer>
@@ -22,12 +31,6 @@ const LayerSwitcher: React.FC = () => {
         <TileLayer
           url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenTopoMap contributors"
-        />
-      </BaseLayer>
-      <BaseLayer name="Light">
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution="&copy; OpenStreetMap contributors &copy; CARTO"
         />
       </BaseLayer>
     </LayersControl>

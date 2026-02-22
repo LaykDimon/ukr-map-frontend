@@ -1,5 +1,5 @@
-import React from 'react';
-import { Person } from '../../types';
+import React from "react";
+import { Person } from "../../types";
 
 interface ExportButtonProps {
   data: Person[];
@@ -8,11 +8,11 @@ interface ExportButtonProps {
 const ExportButton: React.FC<ExportButtonProps> = ({ data }) => {
   const handleExport = () => {
     const dataStr =
-      'data:text/json;charset=utf-8,' +
+      "data:text/json;charset=utf-8," +
       encodeURIComponent(JSON.stringify(data, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', 'notable-people.json');
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "notable-people.json");
     downloadAnchor.click();
   };
 
@@ -21,16 +21,16 @@ const ExportButton: React.FC<ExportButtonProps> = ({ data }) => {
       title="Export filtered people data as JSON"
       onClick={handleExport}
       style={{
-        position: 'absolute',
+        position: "absolute",
         top: 20,
         left: 80,
-        padding: '0.5rem 1rem',
+        padding: "0.5rem 1rem",
         fontSize: 14,
-        backgroundColor: '#222',
-        color: '#fff',
-        border: '1px solid #555',
+        backgroundColor: "var(--bg-card)",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border-tertiary)",
         borderRadius: 6,
-        cursor: 'pointer',
+        cursor: "pointer",
         zIndex: 1000,
       }}
     >

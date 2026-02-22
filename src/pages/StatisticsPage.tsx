@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -13,40 +13,56 @@ import {
   Legend,
   AreaChart,
   Area,
-} from 'recharts';
+} from "recharts";
 import {
   statisticsApi,
   TemporalEntry,
   GeoEntry,
   CategoryEntry,
   OverviewData,
-} from '../api';
+} from "../api";
 
 const COLORS = [
-  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8',
-  '#82ca9d', '#ffc658', '#ff7c43', '#a4de6c', '#d0ed57',
-  '#8dd1e1',
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7c43",
+  "#a4de6c",
+  "#d0ed57",
+  "#8dd1e1",
 ];
 
 const cardStyle: React.CSSProperties = {
-  backgroundColor: '#1e1e1e',
+  backgroundColor: "var(--bg-card)",
   borderRadius: 10,
-  padding: '1.25rem',
-  border: '1px solid #333',
+  padding: "1.25rem",
+  border: "1px solid var(--border-primary)",
 };
 
 const TOP_N = 10;
 
-const CategoriesPieChart: React.FC<{ categories: CategoryEntry[] }> = ({ categories }) => {
+const CategoriesPieChart: React.FC<{ categories: CategoryEntry[] }> = ({
+  categories,
+}) => {
   const chartData = useMemo(() => {
     const sorted = [...categories].sort((a, b) => b.count - a.count);
     if (sorted.length <= TOP_N + 1) return sorted;
     const top = sorted.slice(0, TOP_N);
     const otherCount = sorted.slice(TOP_N).reduce((sum, c) => sum + c.count, 0);
-    return [...top, { category: `Other (${sorted.length - TOP_N})`, count: otherCount }];
+    return [
+      ...top,
+      { category: `Other (${sorted.length - TOP_N})`, count: otherCount },
+    ];
   }, [categories]);
 
-  const total = useMemo(() => chartData.reduce((s, c) => s + c.count, 0), [chartData]);
+  const total = useMemo(
+    () => chartData.reduce((s, c) => s + c.count, 0),
+    [chartData],
+  );
 
   return (
     <ResponsiveContainer width="100%" height={380}>
@@ -58,9 +74,7 @@ const CategoriesPieChart: React.FC<{ categories: CategoryEntry[] }> = ({ categor
           cx="50%"
           cy="50%"
           outerRadius={120}
-          label={(props: any) =>
-            `${props.name} (${props.value})`
-          }
+          label={(props: any) => `${props.name} (${props.value})`}
           labelLine
         >
           {chartData.map((_, i) => (
@@ -69,19 +83,19 @@ const CategoriesPieChart: React.FC<{ categories: CategoryEntry[] }> = ({ categor
         </Pie>
         <Tooltip
           contentStyle={{
-            backgroundColor: '#1e1e1e',
-            border: '1px solid #444',
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-secondary)",
             borderRadius: 6,
-            color: '#eee',
+            color: "var(--text-primary)",
           }}
+          itemStyle={{ color: "var(--text-primary)" }}
+          labelStyle={{ color: "var(--text-secondary)" }}
           formatter={(value: any, name: any) => [
             `${value} (${((Number(value) / total) * 100).toFixed(1)}%)`,
             name,
           ]}
         />
-        <Legend
-          wrapperStyle={{ fontSize: 12 }}
-        />
+        <Legend wrapperStyle={{ fontSize: 12 }} />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -108,7 +122,7 @@ const StatisticsPage: React.FC = () => {
         setCategories(c.data);
         setOverview(o.data);
       } catch (err) {
-        console.error('Failed to load statistics:', err);
+        console.error("Failed to load statistics:", err);
       } finally {
         setLoading(false);
       }
@@ -120,12 +134,12 @@ const StatisticsPage: React.FC = () => {
     return (
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          color: '#aaa',
-          backgroundColor: '#111',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          color: "#aaa",
+          backgroundColor: "var(--bg-page)",
         }}
       >
         Loading statistics...
@@ -136,13 +150,13 @@ const StatisticsPage: React.FC = () => {
   return (
     <div
       style={{
-        backgroundColor: '#111',
-        minHeight: '100vh',
-        padding: '2rem',
-        color: '#eee',
+        backgroundColor: "var(--bg-page)",
+        minHeight: "100vh",
+        padding: "2rem",
+        color: "var(--text-primary)",
       }}
     >
-      <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>
+      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>
         Statistics Dashboard
       </h1>
 
@@ -150,25 +164,31 @@ const StatisticsPage: React.FC = () => {
       {overview && (
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '1rem',
-            marginBottom: '2rem',
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: "1rem",
+            marginBottom: "2rem",
             maxWidth: 800,
-            margin: '0 auto 2rem',
+            margin: "0 auto 2rem",
           }}
         >
           {[
-            { label: 'Total persons', value: overview.totalPersons },
-            { label: 'With coordinates', value: overview.totalWithCoordinates },
-            { label: 'Categories', value: overview.totalCategories },
+            { label: "Total persons", value: overview.totalPersons },
+            { label: "With coordinates", value: overview.totalWithCoordinates },
+            { label: "Categories", value: overview.totalCategories },
             {
-              label: 'Birth year range',
+              label: "Birth year range",
               value: `${overview.minBirthYear} – ${overview.maxBirthYear}`,
             },
           ].map((item) => (
             <div key={item.label} style={cardStyle}>
-              <div style={{ color: '#888', fontSize: 13, marginBottom: 4 }}>
+              <div
+                style={{
+                  color: "var(--text-muted)",
+                  fontSize: 13,
+                  marginBottom: 4,
+                }}
+              >
                 {item.label}
               </div>
               <div style={{ fontSize: 24, fontWeight: 700 }}>{item.value}</div>
@@ -179,9 +199,9 @@ const StatisticsPage: React.FC = () => {
 
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
-          gap: '1.5rem',
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))",
+          gap: "1.5rem",
         }}
       >
         {/* Temporal distribution */}
@@ -189,11 +209,21 @@ const StatisticsPage: React.FC = () => {
           <h3 style={{ marginTop: 0 }}>Persons by decade</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={temporal}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="decade" stroke="#888" />
-              <YAxis stroke="#888" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--border-primary)"
+              />
+              <XAxis dataKey="decade" stroke="var(--text-muted)" />
+              <YAxis stroke="var(--text-muted)" />
               <Tooltip
-                contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #444', borderRadius: 6, color: '#eee' }}
+                contentStyle={{
+                  backgroundColor: "var(--bg-card)",
+                  border: "1px solid var(--border-secondary)",
+                  borderRadius: 6,
+                  color: "var(--text-primary)",
+                }}
+                itemStyle={{ color: "var(--text-primary)" }}
+                labelStyle={{ color: "var(--text-secondary)" }}
               />
               <Area
                 type="monotone"
@@ -211,18 +241,28 @@ const StatisticsPage: React.FC = () => {
           <h3 style={{ marginTop: 0 }}>Top birthplaces</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={geo} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis type="number" stroke="#888" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--border-primary)"
+              />
+              <XAxis type="number" stroke="var(--text-muted)" />
               <YAxis
                 dataKey="birthPlace"
                 type="category"
                 width={140}
-                stroke="#888"
+                stroke="var(--text-muted)"
                 tick={{ fontSize: 11 }}
                 interval={0}
               />
               <Tooltip
-                contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #444', borderRadius: 6, color: '#eee' }}
+                contentStyle={{
+                  backgroundColor: "var(--bg-card)",
+                  border: "1px solid var(--border-secondary)",
+                  borderRadius: 6,
+                  color: "var(--text-primary)",
+                }}
+                itemStyle={{ color: "var(--text-primary)" }}
+                labelStyle={{ color: "var(--text-secondary)" }}
               />
               <Bar dataKey="count" fill="#00C49F" radius={[0, 4, 4, 0]} />
             </BarChart>

@@ -16,6 +16,7 @@ const UserBar: React.FC<UserBarProps> = ({
 }) => {
   return (
     <div
+      className="user-bar-container"
       style={{
         position: "absolute",
         top: 16,
@@ -26,26 +27,28 @@ const UserBar: React.FC<UserBarProps> = ({
       {userRole !== "guest" ? (
         <div
           style={{
-            background: "rgba(30, 30, 30, 0.92)",
+            background: "var(--bg-glass)",
             padding: "8px 14px",
             borderRadius: 8,
-            color: "white",
+            color: "var(--text-primary)",
             display: "flex",
             alignItems: "center",
             gap: 12,
-            border: "1px solid #444",
+            border: "1px solid var(--border-secondary)",
             backdropFilter: "blur(6px)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            boxShadow: "0 2px 8px var(--shadow)",
           }}
         >
-          <span style={{ fontSize: 13, color: "#ccc" }}>{userName}</span>
+          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+            {userName}
+          </span>
           <span
             style={{
               fontSize: 11,
               padding: "2px 8px",
               borderRadius: 4,
-              backgroundColor: "rgba(0, 136, 254, 0.15)",
-              color: "#4dabf7",
+              backgroundColor: "var(--accent-bg)",
+              color: "var(--text-link)",
             }}
           >
             {userRole}
@@ -54,8 +57,8 @@ const UserBar: React.FC<UserBarProps> = ({
             onClick={onLogoutClick}
             style={{
               background: "transparent",
-              border: "1px solid #555",
-              color: "#aaa",
+              border: "1px solid var(--border-tertiary)",
+              color: "var(--text-tertiary)",
               borderRadius: 4,
               cursor: "pointer",
               padding: "4px 10px",
@@ -63,12 +66,12 @@ const UserBar: React.FC<UserBarProps> = ({
               transition: "color 0.15s, border-color 0.15s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#ff6b6b";
-              e.currentTarget.style.borderColor = "#ff6b6b";
+              e.currentTarget.style.color = "var(--danger)";
+              e.currentTarget.style.borderColor = "var(--danger)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#aaa";
-              e.currentTarget.style.borderColor = "#555";
+              e.currentTarget.style.color = "var(--text-tertiary)";
+              e.currentTarget.style.borderColor = "var(--border-tertiary)";
             }}
           >
             Log out
@@ -78,22 +81,22 @@ const UserBar: React.FC<UserBarProps> = ({
         <button
           onClick={onLoginClick}
           style={{
-            background: "rgba(30, 30, 30, 0.92)",
-            color: "#4dabf7",
-            border: "1px solid #444",
+            background: "var(--bg-glass)",
+            color: "var(--text-link)",
+            border: "1px solid var(--border-secondary)",
             borderRadius: 8,
             padding: "8px 18px",
             cursor: "pointer",
             fontSize: 14,
             backdropFilter: "blur(6px)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            boxShadow: "0 2px 8px var(--shadow)",
             transition: "background 0.15s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(50, 50, 50, 0.95)";
+            e.currentTarget.style.background = "var(--bg-glass-hover)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(30, 30, 30, 0.92)";
+            e.currentTarget.style.background = "var(--bg-glass)";
           }}
         >
           Log In

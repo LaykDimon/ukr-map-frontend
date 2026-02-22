@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const teachingPrompts = [
-  'Pick 3 figures on the map. Ask students to compare their historical impact.',
-  'Find someone from your region. What do they symbolize?',
-  'Who among the top 50 had the greatest global influence?',
-  'Select two poets and discuss their themes.',
-  'Explore different professions – who inspired change?',
+  "Pick 3 figures on the map. Ask students to compare their historical impact.",
+  "Find someone from your region. What do they symbolize?",
+  "Who among the top 50 had the greatest global influence?",
+  "Select two poets and discuss their themes.",
+  "Explore different professions – who inspired change?",
 ];
 
 const TeachingPrompt: React.FC = () => {
@@ -26,14 +26,14 @@ const TeachingPrompt: React.FC = () => {
   return (
     <div
       style={{
-        position: 'absolute',
+        position: "absolute",
         bottom: 80,
         left: 20,
-        padding: '0.5rem 1rem',
+        padding: "0.5rem 1rem",
         fontSize: 14,
-        backgroundColor: '#222',
-        color: '#fff',
-        border: '1px solid #555',
+        backgroundColor: "var(--bg-card)",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border-tertiary)",
         borderRadius: 6,
         zIndex: 1000,
       }}

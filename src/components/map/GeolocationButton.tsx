@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useMap } from 'react-leaflet';
+import React, { useState } from "react";
+import { useMap } from "react-leaflet";
 
 const GeolocationButton: React.FC = () => {
   const map = useMap();
@@ -23,9 +23,9 @@ const GeolocationButton: React.FC = () => {
   return (
     <div
       style={{
-        position: 'absolute',
-        top: 60,
-        right: 20,
+        position: "absolute",
+        top: 160,
+        right: 16,
         zIndex: 1000,
       }}
     >
@@ -33,19 +33,20 @@ const GeolocationButton: React.FC = () => {
         onClick={handleLocate}
         disabled={locating}
         style={{
-          background: 'rgba(30, 30, 30, 0.85)',
-          color: 'white',
-          border: '1px solid #555',
-          borderRadius: 6,
-          padding: '0.5rem 0.75rem',
-          cursor: locating ? 'wait' : 'pointer',
-          fontSize: 14,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+          background: "var(--bg-glass)",
+          color: "var(--text-primary)",
+          border: "1px solid var(--border-secondary)",
+          borderRadius: 8,
+          padding: "6px 14px",
+          cursor: locating ? "wait" : "pointer",
+          fontSize: 13,
+          backdropFilter: "blur(6px)",
+          boxShadow: "0 2px 8px var(--shadow)",
           opacity: locating ? 0.6 : 1,
         }}
         title="Go to my location"
       >
-        {locating ? '...' : '📍 My Location'}
+        {locating ? "..." : "📍 My Location"}
       </button>
     </div>
   );

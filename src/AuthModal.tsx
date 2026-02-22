@@ -1,9 +1,9 @@
-import React, { useState, FormEvent, MouseEvent } from 'react';
-import axios from 'axios';
-import './AuthModal.css';
-import { User } from './types';
+import React, { useState, useEffect, FormEvent, MouseEvent } from "react";
+import axios from "axios";
+import "./AuthModal.css";
+import { User } from "./types";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -13,20 +13,34 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const [isRegistering, setIsRegistering] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  // Body scroll lock is handled via CSS class in useEffect below
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
-    const endpoint = isRegistering ? '/auth/register' : '/auth/login';
+    const endpoint = isRegistering ? "/auth/register" : "/auth/login";
     const payload = isRegistering
       ? { email, password, username }
       : { email, password };
@@ -41,10 +55,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       const { accessToken, user } = response.data;
       onLogin(user, accessToken);
     } catch (err: unknown) {
-      const msg =
-        axios.isAxiosError(err) ? err.response?.data?.message : undefined;
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.message
+        : undefined;
       setError(
-        Array.isArray(msg) ? msg.join(', ') : msg || 'Something went wrong',
+        Array.isArray(msg) ? msg.join(", ") : msg || "Something went wrong",
       );
     } finally {
       setIsLoading(false);
@@ -59,7 +74,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2>{isRegistering ? 'Створити акаунт' : 'Вхід'}</h2>
+          <h2>{isRegistering ? "Створити акаунт" : "Вхід"}</h2>
           <button className="close-x-btn" onClick={onClose}>
             &times;
           </button>
@@ -103,10 +118,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
           <button type="submit" className="submit-btn" disabled={isLoading}>
             {isLoading
-              ? 'Processing...'
+              ? "Processing..."
               : isRegistering
-                ? 'Зареєструватися'
-                : 'Увійти'}
+                ? "Зареєструватися"
+                : "Увійти"}
           </button>
         </form>
 
@@ -115,13 +130,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
             className="switch-btn"
             onClick={() => {
               setIsRegistering(!isRegistering);
-              setError('');
+              setError("");
             }}
             disabled={isLoading}
           >
             {isRegistering
-              ? 'Вже є акаунт? Увійти'
-              : 'Немає акаунту? Реєстрація'}
+              ? "Вже є акаунт? Увійти"
+              : "Немає акаунту? Реєстрація"}
           </button>
         </div>
       </div>

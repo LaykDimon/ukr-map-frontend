@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -21,7 +21,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    console.error("ErrorBoundary caught:", error, errorInfo);
   }
 
   render() {
@@ -31,21 +31,27 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100vh',
-            backgroundColor: '#1a1a2e',
-            color: '#e0e0e0',
-            fontFamily: 'inherit',
-            padding: '2rem',
-            textAlign: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            backgroundColor: "var(--bg-page)",
+            color: "var(--text-primary)",
+            fontFamily: "inherit",
+            padding: "2rem",
+            textAlign: "center",
           }}
         >
-          <h2 style={{ marginBottom: '1rem' }}>Something went wrong</h2>
-          <p style={{ color: '#999', marginBottom: '1.5rem', maxWidth: 500 }}>
-            {this.state.error?.message || 'An unexpected error occurred.'}
+          <h2 style={{ marginBottom: "1rem" }}>Something went wrong</h2>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              marginBottom: "1.5rem",
+              maxWidth: 500,
+            }}
+          >
+            {this.state.error?.message || "An unexpected error occurred."}
           </p>
           <button
             onClick={() => {
@@ -53,13 +59,13 @@ class ErrorBoundary extends Component<Props, State> {
               window.location.reload();
             }}
             style={{
-              padding: '0.75rem 1.5rem',
+              padding: "0.75rem 1.5rem",
               borderRadius: 6,
-              border: 'none',
-              backgroundColor: '#3498db',
-              color: 'white',
+              border: "none",
+              backgroundColor: "var(--accent)",
+              color: "white",
               fontSize: 16,
-              cursor: 'pointer',
+              cursor: "pointer",
             }}
           >
             Reload page

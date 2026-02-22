@@ -1,6 +1,6 @@
-import React from 'react';
-import { useMap } from 'react-leaflet';
-import L from 'leaflet';
+import React from "react";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
 
 const ukrBounds: L.LatLngBoundsExpression = [
   [44, 22],
@@ -17,23 +17,24 @@ const ResetViewButton: React.FC = () => {
   return (
     <div
       style={{
-        position: 'absolute',
-        top: 20,
-        right: 20,
+        position: "absolute",
+        top: 120,
+        right: 16,
         zIndex: 1000,
       }}
     >
       <button
         onClick={handleReset}
         style={{
-          background: 'rgba(30, 30, 30, 0.85)',
-          color: 'white',
-          border: '1px solid #555',
-          borderRadius: 6,
-          padding: '0.5rem 0.75rem',
-          cursor: 'pointer',
-          fontSize: 14,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+          background: "var(--bg-glass)",
+          color: "var(--text-primary)",
+          border: "1px solid var(--border-secondary)",
+          borderRadius: 8,
+          padding: "6px 14px",
+          cursor: "pointer",
+          fontSize: 13,
+          backdropFilter: "blur(6px)",
+          boxShadow: "0 2px 8px var(--shadow)",
         }}
       >
         Reset View

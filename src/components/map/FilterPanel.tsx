@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Person } from '../../types';
+import React, { useMemo } from "react";
+import { Person } from "../../types";
 
 interface FilterPanelProps {
   persons: Person[];
@@ -13,21 +13,21 @@ interface FilterPanelProps {
 }
 
 const selectStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '6px 8px',
+  width: "100%",
+  padding: "6px 8px",
   borderRadius: 4,
-  border: '1px solid #555',
-  backgroundColor: '#1e1e1e',
-  color: '#fff',
+  border: "1px solid var(--border-tertiary)",
+  backgroundColor: "var(--bg-input)",
+  color: "var(--text-primary)",
   fontSize: 13,
-  boxSizing: 'border-box',
+  boxSizing: "border-box",
 };
 
 const yearInputStyle: React.CSSProperties = {
   ...selectStyle,
   // Hide number spinners
-  MozAppearance: 'textfield',
-  appearance: 'textfield' as any,
+  MozAppearance: "textfield",
+  appearance: "textfield" as any,
 };
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -48,28 +48,40 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     return Array.from(cats).sort();
   }, [persons]);
 
-  const hasFilters = category !== '' || birthPlace !== '' || birthYearRange[0] !== null || birthYearRange[1] !== null;
+  const hasFilters =
+    category !== "" ||
+    birthPlace !== "" ||
+    birthYearRange[0] !== null ||
+    birthYearRange[1] !== null;
 
   return (
     <div
+      className="filter-panel-container"
       style={{
-        position: 'absolute',
-        top: 72,
-        left: 16,
+        position: "absolute",
+        top: 16,
+        left: 50,
         zIndex: 1000,
-        backgroundColor: 'rgba(30, 30, 30, 0.92)',
+        backgroundColor: "var(--bg-glass)",
         borderRadius: 8,
-        padding: '10px 12px',
-        color: 'white',
-        border: '1px solid #444',
-        backdropFilter: 'blur(6px)',
+        padding: "10px 12px",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border-secondary)",
+        backdropFilter: "blur(6px)",
         width: 210,
         fontSize: 13,
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 8 }}>Filters</div>
 
-      <label style={{ display: 'block', marginBottom: 4, color: '#aaa', fontSize: 12 }}>
+      <label
+        style={{
+          display: "block",
+          marginBottom: 4,
+          color: "var(--text-tertiary)",
+          fontSize: 12,
+        }}
+      >
         Category
       </label>
       <select
@@ -85,7 +97,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         ))}
       </select>
 
-      <label style={{ display: 'block', marginBottom: 4, color: '#aaa', fontSize: 12 }}>
+      <label
+        style={{
+          display: "block",
+          marginBottom: 4,
+          color: "var(--text-tertiary)",
+          fontSize: 12,
+        }}
+      >
         Birth place
       </label>
       <input
@@ -96,9 +115,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         style={{ ...selectStyle, marginBottom: 10 }}
       />
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: 4, color: '#aaa', fontSize: 12 }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: 4,
+              color: "var(--text-tertiary)",
+              fontSize: 12,
+            }}
+          >
             Year from
           </label>
           <input
@@ -106,9 +132,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             inputMode="numeric"
             pattern="[0-9]*"
             placeholder="1800"
-            value={birthYearRange[0] ?? ''}
+            value={birthYearRange[0] ?? ""}
             onChange={(e) => {
-              const val = e.target.value.replace(/[^0-9-]/g, '');
+              const val = e.target.value.replace(/[^0-9-]/g, "");
               onBirthYearRangeChange([
                 val ? parseInt(val) : null,
                 birthYearRange[1],
@@ -118,7 +144,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           />
         </div>
         <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: 4, color: '#aaa', fontSize: 12 }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: 4,
+              color: "var(--text-tertiary)",
+              fontSize: 12,
+            }}
+          >
             Year to
           </label>
           <input
@@ -126,9 +159,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             inputMode="numeric"
             pattern="[0-9]*"
             placeholder="1900"
-            value={birthYearRange[1] ?? ''}
+            value={birthYearRange[1] ?? ""}
             onChange={(e) => {
-              const val = e.target.value.replace(/[^0-9-]/g, '');
+              const val = e.target.value.replace(/[^0-9-]/g, "");
               onBirthYearRangeChange([
                 birthYearRange[0],
                 val ? parseInt(val) : null,
@@ -143,18 +176,22 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         <button
           onClick={onReset}
           style={{
-            width: '100%',
-            padding: '6px',
+            width: "100%",
+            padding: "6px",
             borderRadius: 4,
-            border: '1px solid #555',
-            backgroundColor: 'transparent',
-            color: '#aaa',
+            border: "1px solid var(--border-tertiary)",
+            backgroundColor: "transparent",
+            color: "var(--text-tertiary)",
             fontSize: 12,
-            cursor: 'pointer',
-            transition: 'color 0.15s',
+            cursor: "pointer",
+            transition: "color 0.15s",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = '#aaa'; }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--text-tertiary)";
+          }}
         >
           Reset filters
         </button>

@@ -1,13 +1,19 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { MapContainer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Person, UserRole } from './types';
-import { useAppDispatch, useAppSelector } from './store/hooks';
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
+import { MapContainer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { Person, UserRole } from "./types";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
   fetchPersons,
   removePerson,
   restorePerson,
-} from './store/personsSlice';
+} from "./store/personsSlice";
 import {
   setSearch,
   setMaxCount,
@@ -15,19 +21,19 @@ import {
   setBirthPlace,
   setBirthYearRange,
   resetFilters,
-} from './store/filtersSlice';
-import ResetViewButton, { ukrBounds } from './components/map/ResetViewButton';
-import JumpToPerson from './components/map/JumpToPerson';
-import TeachingPrompt from './components/map/TeachingPrompt';
-import SearchPanel from './components/map/SearchPanel';
-import ClusteredMarkers from './components/map/ClusteredMarkers';
-import RemovedPeoplePanel from './components/map/RemovedPeoplePanel';
-import UserBar from './components/map/UserBar';
-import TeacherQuestions from './components/map/TeacherQuestions';
-import ExportButton from './components/map/ExportButton';
-import LayerSwitcher from './components/map/LayerSwitcher';
-import GeolocationButton from './components/map/GeolocationButton';
-import FilterPanel from './components/map/FilterPanel';
+} from "./store/filtersSlice";
+import ResetViewButton, { ukrBounds } from "./components/map/ResetViewButton";
+import JumpToPerson from "./components/map/JumpToPerson";
+import TeachingPrompt from "./components/map/TeachingPrompt";
+import SearchPanel from "./components/map/SearchPanel";
+import ClusteredMarkers from "./components/map/ClusteredMarkers";
+import RemovedPeoplePanel from "./components/map/RemovedPeoplePanel";
+import UserBar from "./components/map/UserBar";
+import TeacherQuestions from "./components/map/TeacherQuestions";
+import ExportButton from "./components/map/ExportButton";
+import LayerSwitcher from "./components/map/LayerSwitcher";
+import GeolocationButton from "./components/map/GeolocationButton";
+import FilterPanel from "./components/map/FilterPanel";
 
 interface MapProps {
   userRole: UserRole;
@@ -54,6 +60,7 @@ const MapView: React.FC<MapProps> = ({
 
   const [activePerson, setActivePerson] = useState<Person | null>(null);
   const [hoveredPerson, setHoveredPerson] = useState<Person | null>(null);
+  const [showMarkers, setShowMarkers] = useState(true);
   const hoveredPersonRef = useRef<Person | null>(null);
 
   // Stable callback that updates ref (for ClusteredMarkers) and state only when needed
@@ -62,8 +69,14 @@ const MapView: React.FC<MapProps> = ({
     setHoveredPerson(person);
   }, []);
 
-  const handleSearchChange = useCallback((v: string) => dispatch(setSearch(v)), [dispatch]);
-  const handleMaxCountChange = useCallback((v: string) => dispatch(setMaxCount(v)), [dispatch]);
+  const handleSearchChange = useCallback(
+    (v: string) => dispatch(setSearch(v)),
+    [dispatch],
+  );
+  const handleMaxCountChange = useCallback(
+    (v: string) => dispatch(setMaxCount(v)),
+    [dispatch],
+  );
 
   useEffect(() => {
     dispatch(fetchPersons());
@@ -76,7 +89,7 @@ const MapView: React.FC<MapProps> = ({
 
   const filteredPeople = useMemo(() => {
     const list =
-      maxCount !== 'all' ? persons.slice(0, parseInt(maxCount)) : persons;
+      maxCount !== "all" ? persons.slice(0, parseInt(maxCount)) : persons;
 
     return list
       .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
@@ -88,12 +101,30 @@ const MapView: React.FC<MapProps> = ({
           : true,
       )
       .filter((p) => {
-        if (birthYearRange[0] != null && p.birthYear != null && p.birthYear < birthYearRange[0]) return false;
-        if (birthYearRange[1] != null && p.birthYear != null && p.birthYear > birthYearRange[1]) return false;
+        if (
+          birthYearRange[0] != null &&
+          p.birthYear != null &&
+          p.birthYear < birthYearRange[0]
+        )
+          return false;
+        if (
+          birthYearRange[1] != null &&
+          p.birthYear != null &&
+          p.birthYear > birthYearRange[1]
+        )
+          return false;
         return true;
       })
       .sort((a, b) => b.rating - a.rating);
-  }, [search, maxCount, removedIds, persons, category, birthPlace, birthYearRange]);
+  }, [
+    search,
+    maxCount,
+    removedIds,
+    persons,
+    category,
+    birthPlace,
+    birthYearRange,
+  ]);
 
   // Merge fuzzy search results into map markers so they're always visible
   const displayPeople = useMemo(() => {
@@ -116,7 +147,7 @@ const MapView: React.FC<MapProps> = ({
   };
 
   return (
-    <div style={{ position: 'relative', height: '100vh' }}>
+    <div style={{ position: "relative", height: "100vh" }}>
       <SearchPanel
         search={search}
         maxPeopleCount={maxCount}
@@ -134,7 +165,32 @@ const MapView: React.FC<MapProps> = ({
         onLogoutClick={onLogoutClick}
       />
 
-      {userRole !== 'guest' && (
+      {/* Toggle markers visibility */}
+      <button
+        className="markers-toggle-btn"
+        onClick={() => setShowMarkers((v) => !v)}
+        title={showMarkers ? "Hide all markers" : "Show all markers"}
+        style={{
+          position: "absolute",
+          top: 70,
+          right: 16,
+          zIndex: 1000,
+          background: "var(--bg-glass)",
+          color: showMarkers ? "var(--text-link)" : "var(--text-muted)",
+          border: "1px solid var(--border-secondary)",
+          borderRadius: 8,
+          padding: "6px 14px",
+          cursor: "pointer",
+          fontSize: 13,
+          backdropFilter: "blur(6px)",
+          boxShadow: "0 2px 8px var(--shadow)",
+          transition: "color 0.15s",
+        }}
+      >
+        {showMarkers ? "👁 Hide markers" : "👁‍🗨 Show markers"}
+      </button>
+
+      {userRole !== "guest" && (
         <FilterPanel
           persons={persons}
           category={category}
@@ -147,10 +203,10 @@ const MapView: React.FC<MapProps> = ({
         />
       )}
 
-      <div style={{ width: '100%', height: '100vh' }}>
+      <div style={{ width: "100%", height: "100vh" }}>
         <MapContainer
           bounds={ukrBounds}
-          style={{ height: '100vh', width: '100%' }}
+          style={{ height: "100vh", width: "100%" }}
         >
           <LayerSwitcher />
           <ClusteredMarkers
@@ -158,6 +214,7 @@ const MapView: React.FC<MapProps> = ({
             hoveredPerson={hoveredPerson}
             userRole={userRole}
             onRemove={handleRemovePerson}
+            showMarkers={showMarkers}
           />
           {activePerson && <JumpToPerson person={activePerson} />}
           <ResetViewButton />
@@ -165,14 +222,14 @@ const MapView: React.FC<MapProps> = ({
         </MapContainer>
       </div>
 
-      {userRole === 'researcher' && filteredPeople.length > 0 && (
+      {userRole === "researcher" && filteredPeople.length > 0 && (
         <ExportButton data={filteredPeople} />
       )}
 
-      {userRole === 'teacher' && <TeachingPrompt />}
-      {userRole === 'teacher' && <TeacherQuestions />}
+      {userRole === "teacher" && <TeachingPrompt />}
+      {userRole === "teacher" && <TeacherQuestions />}
 
-      {userRole !== 'guest' && (
+      {userRole !== "guest" && (
         <RemovedPeoplePanel
           removedPeople={removedPeople}
           onRestore={handleRestorePerson}

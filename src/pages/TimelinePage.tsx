@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchPersons } from '../store/personsSlice';
-import { Person } from '../types';
+import React, { useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchPersons } from "../store/personsSlice";
+import { Person } from "../types";
 
 const TimelinePage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -40,35 +40,39 @@ const TimelinePage: React.FC = () => {
   return (
     <div
       style={{
-        backgroundColor: '#111',
-        minHeight: '100vh',
-        padding: '2rem',
-        color: '#eee',
+        backgroundColor: "var(--bg-page)",
+        minHeight: "100vh",
+        padding: "2rem",
+        color: "var(--text-primary)",
       }}
     >
-      <h1 style={{ textAlign: 'center', marginBottom: '1rem' }}>
+      <h1 style={{ textAlign: "center", marginBottom: "1rem" }}>
         Historical Timeline
       </h1>
 
       {/* Century buttons */}
       <div
         style={{
-          display: 'flex',
+          display: "flex",
           gap: 8,
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          marginBottom: '2rem',
+          justifyContent: "center",
+          flexWrap: "wrap",
+          marginBottom: "2rem",
         }}
       >
         <button
-          onClick={() => { setSelectedCentury(null); setVisibleCount(100); }}
+          onClick={() => {
+            setSelectedCentury(null);
+            setVisibleCount(100);
+          }}
           style={{
-            padding: '6px 14px',
+            padding: "6px 14px",
             borderRadius: 6,
-            border: '1px solid #555',
-            backgroundColor: selectedCentury === null ? '#0088FE' : '#222',
-            color: '#fff',
-            cursor: 'pointer',
+            border: "1px solid var(--border-tertiary)",
+            backgroundColor:
+              selectedCentury === null ? "var(--accent)" : "var(--bg-input)",
+            color: "var(--text-primary)",
+            cursor: "pointer",
             fontSize: 13,
           }}
         >
@@ -77,15 +81,20 @@ const TimelinePage: React.FC = () => {
         {centuries.map(([century, people]) => (
           <button
             key={century}
-            onClick={() => { setSelectedCentury(century); setVisibleCount(100); }}
+            onClick={() => {
+              setSelectedCentury(century);
+              setVisibleCount(100);
+            }}
             style={{
-              padding: '6px 14px',
+              padding: "6px 14px",
               borderRadius: 6,
-              border: '1px solid #555',
+              border: "1px solid var(--border-tertiary)",
               backgroundColor:
-                selectedCentury === century ? '#0088FE' : '#222',
-              color: '#fff',
-              cursor: 'pointer',
+                selectedCentury === century
+                  ? "var(--accent)"
+                  : "var(--bg-input)",
+              color: "var(--text-primary)",
+              cursor: "pointer",
               fontSize: 13,
             }}
           >
@@ -97,11 +106,11 @@ const TimelinePage: React.FC = () => {
       {/* Timeline */}
       <div
         style={{
-          position: 'relative',
+          position: "relative",
           maxWidth: 800,
-          margin: '0 auto',
+          margin: "0 auto",
           paddingLeft: 30,
-          borderLeft: '2px solid #333',
+          borderLeft: "2px solid var(--border-primary)",
         }}
       >
         {displayedPersons.slice(0, visibleCount).map((person) => {
@@ -113,7 +122,7 @@ const TimelinePage: React.FC = () => {
             <div
               key={person.id}
               style={{
-                position: 'relative',
+                position: "relative",
                 marginBottom: 16,
                 paddingLeft: 24,
               }}
@@ -121,24 +130,24 @@ const TimelinePage: React.FC = () => {
               {/* Dot */}
               <div
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   left: -8,
                   top: 6,
                   width: 12,
                   height: 12,
-                  borderRadius: '50%',
-                  backgroundColor: '#0088FE',
-                  border: '2px solid #111',
+                  borderRadius: "50%",
+                  backgroundColor: "var(--accent)",
+                  border: "2px solid var(--bg-page)",
                 }}
               />
               <div
                 style={{
-                  backgroundColor: '#1e1e1e',
-                  border: '1px solid #333',
+                  backgroundColor: "var(--bg-card)",
+                  border: "1px solid var(--border-primary)",
                   borderRadius: 8,
-                  padding: '0.75rem 1rem',
-                  display: 'flex',
-                  alignItems: 'center',
+                  padding: "0.75rem 1rem",
+                  display: "flex",
+                  alignItems: "center",
                   gap: 12,
                 }}
               >
@@ -150,7 +159,7 @@ const TimelinePage: React.FC = () => {
                       width: 48,
                       height: 48,
                       borderRadius: 6,
-                      objectFit: 'cover',
+                      objectFit: "cover",
                       flexShrink: 0,
                     }}
                   />
@@ -162,7 +171,10 @@ const TimelinePage: React.FC = () => {
                         href={wikiUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: '#4dabf7', textDecoration: 'none' }}
+                        style={{
+                          color: "var(--text-link)",
+                          textDecoration: "none",
+                        }}
                       >
                         {person.name}
                       </a>
@@ -170,15 +182,15 @@ const TimelinePage: React.FC = () => {
                       person.name
                     )}
                   </div>
-                  <div style={{ color: '#888', fontSize: 12 }}>
+                  <div style={{ color: "var(--text-muted)", fontSize: 12 }}>
                     {person.birthYear}
                     {person.birthPlace && ` — ${person.birthPlace}`}
                     {person.category && (
                       <span
                         style={{
                           marginLeft: 8,
-                          backgroundColor: '#333',
-                          padding: '1px 6px',
+                          backgroundColor: "var(--bg-hover)",
+                          padding: "1px 6px",
                           borderRadius: 4,
                           fontSize: 11,
                         }}
@@ -191,9 +203,9 @@ const TimelinePage: React.FC = () => {
                 {person.views > 0 && (
                   <div
                     style={{
-                      color: '#555',
+                      color: "var(--text-faint)",
                       fontSize: 11,
-                      whiteSpace: 'nowrap',
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {person.views.toLocaleString()} views
@@ -204,19 +216,25 @@ const TimelinePage: React.FC = () => {
           );
         })}
         {displayedPersons.length > visibleCount && (
-          <div style={{ textAlign: 'center', padding: '1rem' }}>
-            <div style={{ color: '#666', fontSize: 13, marginBottom: 8 }}>
+          <div style={{ textAlign: "center", padding: "1rem" }}>
+            <div
+              style={{
+                color: "var(--text-faint)",
+                fontSize: 13,
+                marginBottom: 8,
+              }}
+            >
               Showing {visibleCount} of {displayedPersons.length} persons
             </div>
             <button
               onClick={() => setVisibleCount((c) => c + 100)}
               style={{
-                padding: '8px 24px',
+                padding: "8px 24px",
                 borderRadius: 6,
-                border: '1px solid #555',
-                backgroundColor: '#222',
-                color: '#fff',
-                cursor: 'pointer',
+                border: "1px solid var(--border-tertiary)",
+                backgroundColor: "var(--bg-input)",
+                color: "var(--text-primary)",
+                cursor: "pointer",
                 fontSize: 13,
               }}
             >
