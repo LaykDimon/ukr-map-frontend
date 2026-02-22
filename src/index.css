@@ -269,6 +269,12 @@ input[type="number"] {
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ── Responsive: Tablet (≤768px) ── */
 @media (max-width: 768px) {
   .search-panel-container {

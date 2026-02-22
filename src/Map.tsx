@@ -51,6 +51,7 @@ const MapView: React.FC<MapProps> = ({
   const dispatch = useAppDispatch();
   const persons = useAppSelector((s) => s.persons.items);
   const removedIds = useAppSelector((s) => s.persons.removedIds);
+  const personsLoading = useAppSelector((s) => s.persons.loading);
   const searchResults = useAppSelector((s) => s.persons.searchResults);
   const search = useAppSelector((s) => s.filters.search);
   const maxCount = useAppSelector((s) => s.filters.maxCount);
@@ -148,6 +149,44 @@ const MapView: React.FC<MapProps> = ({
 
   return (
     <div style={{ position: "relative", height: "100vh" }}>
+      {/* Loading indicator for persons data */}
+      {personsLoading && (
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1100,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "var(--bg-glass)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid var(--border-secondary)",
+            borderRadius: 10,
+            padding: "8px 18px",
+            boxShadow: "0 2px 12px var(--shadow)",
+            fontSize: 13,
+            color: "var(--text-primary)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              width: 14,
+              height: 14,
+              border: "2px solid var(--border-secondary)",
+              borderTopColor: "var(--accent)",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
+          Loading {persons.length > 0 ? `${persons.length.toLocaleString()} persons…` : "persons…"}
+        </div>
+      )}
+
       <SearchPanel
         search={search}
         maxPeopleCount={maxCount}
