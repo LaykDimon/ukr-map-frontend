@@ -2,10 +2,23 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { fetchPersons } from "../store/personsSlice";
-import { personsApi, proposedEditsApi, CreatePersonPayload } from "../api";
+import {
+  personsApi,
+  proposedEditsApi,
+  usersApi,
+  AdminUser,
+  CreatePersonPayload,
+} from "../api";
 import api from "../api";
-import { Person, ProposedEdit, ProposedEditStatus } from "../types";
+import {
+  Person,
+  ProposedEdit,
+  ProposedEditStatus,
+  BackendRole,
+  UserPersona,
+} from "../types";
 import { isTokenExpired } from "../store/tokenUtils";
+import { updatePersona as updateAuthPersona } from "../store/authSlice";
 
 interface ImportLog {
   id: number;
@@ -84,7 +97,8 @@ const LOGS_PAGE_SIZE = 10;
 
 const AdminPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const userRole = useAppSelector((s) => s.auth.user?.role);
+  const currentUser = useAppSelector((s) => s.auth.user);
+  const userRole = currentUser?.role;
   const token = useAppSelector((s) => s.auth.token);
   const persons = useAppSelector((s) => s.persons.items);
 
@@ -113,6 +127,10 @@ const AdminPage: React.FC = () => {
   const [logsPage, setLogsPage] = useState(0);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
+  // Users management state
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
   const loadProposedEdits = useCallback((status?: ProposedEditStatus) => {
     proposedEditsApi
       .getAll(status)
@@ -128,6 +146,12 @@ const AdminPage: React.FC = () => {
       .then((res) => setLogs(res.data))
       .catch((err) => console.error("Failed to load import logs:", err));
     loadProposedEdits(editsFilter || undefined);
+    setUsersLoading(true);
+    usersApi
+      .getAll()
+      .then((res) => setUsers(res.data))
+      .catch((err) => console.error("Failed to load users:", err))
+      .finally(() => setUsersLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRole, token, dispatch, loadProposedEdits, editsFilter]);
 
@@ -257,6 +281,31 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const handleUserRoleChange = async (userId: number, role: BackendRole) => {
+    try {
+      const res = await usersApi.updateRole(userId, role);
+      setUsers((prev) => prev.map((u) => (u.id === userId ? res.data : u)));
+    } catch (err) {
+      console.error("Failed to update user role:", err);
+    }
+  };
+
+  const handleUserPersonaChange = async (
+    userId: number,
+    persona: UserPersona,
+  ) => {
+    try {
+      const res = await usersApi.updatePersona(userId, persona);
+      setUsers((prev) => prev.map((u) => (u.id === userId ? res.data : u)));
+      // If changing own persona, update Redux so the UI reflects it immediately
+      if (currentUser?.id === userId) {
+        dispatch(updateAuthPersona(persona));
+      }
+    } catch (err) {
+      console.error("Failed to update user persona:", err);
+    }
+  };
+
   const filteredPersons = persons.filter((p) =>
     p.name.toLowerCase().includes(filterText.toLowerCase()),
   );
@@ -328,6 +377,161 @@ const AdminPage: React.FC = () => {
           >
             {syncResult}
           </div>
+        )}
+      </div>
+
+      {/* Users Management */}
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Users ({users.length})</h3>
+        {usersLoading ? (
+          <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
+            Loading users…
+          </p>
+        ) : users.length === 0 ? (
+          <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
+            No users found.
+          </p>
+        ) : (
+          <>
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead>
+                  <tr
+                    style={{
+                      borderBottom: "2px solid var(--border-primary)",
+                      textAlign: "left",
+                    }}
+                  >
+                    <th style={{ padding: "8px 6px" }}>ID</th>
+                    <th style={{ padding: "8px 6px" }}>Username</th>
+                    <th style={{ padding: "8px 6px" }}>Email</th>
+                    <th style={{ padding: "8px 6px" }}>Role</th>
+                    <th style={{ padding: "8px 6px" }}>Persona</th>
+                    <th style={{ padding: "8px 6px" }}>Registered</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr
+                      key={u.id}
+                      style={{
+                        borderBottom: "1px solid var(--border-faint)",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "8px 6px",
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        {u.id}
+                      </td>
+                      <td style={{ padding: "8px 6px", fontWeight: 500 }}>
+                        {u.username}
+                        {currentUser?.id === u.id && (
+                          <span
+                            style={{
+                              marginLeft: 6,
+                              fontSize: 11,
+                              color: "var(--accent)",
+                              fontWeight: 400,
+                            }}
+                          >
+                            (you)
+                          </span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px 6px",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
+                        {u.email}
+                      </td>
+                      <td style={{ padding: "8px 6px" }}>
+                        <select
+                          value={u.role}
+                          disabled={currentUser?.id === u.id}
+                          title={
+                            currentUser?.id === u.id
+                              ? "You cannot change your own role"
+                              : undefined
+                          }
+                          onChange={(e) =>
+                            handleUserRoleChange(
+                              u.id,
+                              e.target.value as BackendRole,
+                            )
+                          }
+                          style={{
+                            ...inputStyle,
+                            width: "auto",
+                            padding: "4px 8px",
+                            cursor:
+                              currentUser?.id === u.id
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity: currentUser?.id === u.id ? 0.5 : 1,
+                          }}
+                        >
+                          <option value="user">user</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: "8px 6px" }}>
+                        <select
+                          value={u.persona}
+                          onChange={(e) =>
+                            handleUserPersonaChange(
+                              u.id,
+                              e.target.value as UserPersona,
+                            )
+                          }
+                          style={{
+                            ...inputStyle,
+                            width: "auto",
+                            padding: "4px 8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <option value="student">🎓 Student</option>
+                          <option value="teacher">🧑‍🏫 Teacher</option>
+                          <option value="researcher">🧑‍🔬 Researcher</option>
+                          <option value="guest">👀 Guest</option>
+                        </select>
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px 6px",
+                          color: "var(--text-muted)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p
+              style={{
+                margin: "8px 0 0",
+                fontSize: 12,
+                color: "var(--text-muted)",
+              }}
+            >
+              Role/persona changes for other users take effect on their next
+              login.
+            </p>
+          </>
         )}
       </div>
 

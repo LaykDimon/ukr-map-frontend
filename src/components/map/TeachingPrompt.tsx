@@ -27,15 +27,18 @@ const TeachingPrompt: React.FC = () => {
     <div
       style={{
         position: "absolute",
-        bottom: 80,
+        bottom: 90,
         left: 20,
         padding: "0.5rem 1rem",
         fontSize: 14,
-        backgroundColor: "var(--bg-card)",
+        backgroundColor: "var(--bg-glass)",
         color: "var(--text-primary)",
-        border: "1px solid var(--border-tertiary)",
-        borderRadius: 6,
+        border: "1px solid var(--border-secondary)",
+        borderRadius: 8,
         zIndex: 1000,
+        maxWidth: 460,
+        backdropFilter: "blur(6px)",
+        boxShadow: "0 2px 8px var(--shadow)",
       }}
     >
       <strong>💡 Teaching idea:</strong> {randomPrompt}

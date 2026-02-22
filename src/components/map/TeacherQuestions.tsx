@@ -8,16 +8,18 @@ const TeacherQuestions: React.FC = () => {
       style={{
         position: "absolute",
         top: 20,
-        left: 80,
+        left: 300,
         padding: "1rem 1.5rem",
         fontSize: "14px",
-        backgroundColor: "var(--bg-card)",
+        backgroundColor: "var(--bg-glass)",
         color: "var(--text-primary)",
-        border: "1px solid var(--border-tertiary)",
+        border: "1px solid var(--border-secondary)",
         borderRadius: "8px",
         zIndex: 1000,
         width: "fit-content",
-        boxShadow: "0px 4px 15px var(--shadow)",
+        maxWidth: 340,
+        backdropFilter: "blur(6px)",
+        boxShadow: "0 4px 15px var(--shadow)",
       }}
     >
       <button

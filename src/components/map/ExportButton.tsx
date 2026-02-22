@@ -23,15 +23,18 @@ const ExportButton: React.FC<ExportButtonProps> = ({ data }) => {
       style={{
         position: "absolute",
         top: 20,
-        left: 80,
+        left: 300,
         padding: "0.5rem 1rem",
         fontSize: 14,
-        backgroundColor: "var(--bg-card)",
+        backgroundColor: "var(--bg-glass)",
         color: "var(--text-primary)",
-        border: "1px solid var(--border-tertiary)",
-        borderRadius: 6,
+        border: "1px solid var(--border-secondary)",
+        borderRadius: 8,
         cursor: "pointer",
         zIndex: 1000,
+        backdropFilter: "blur(6px)",
+        boxShadow: "0 2px 8px var(--shadow)",
+        transition: "background 0.15s",
       }}
     >
       📄 Export JSON

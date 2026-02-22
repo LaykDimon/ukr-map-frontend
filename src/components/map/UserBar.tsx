@@ -3,6 +3,7 @@ import { UserRole } from "../../types";
 
 interface UserBarProps {
   userRole: UserRole;
+  isAdmin?: boolean;
   userName?: string;
   onLoginClick: () => void;
   onLogoutClick: () => void;
@@ -10,6 +11,7 @@ interface UserBarProps {
 
 const UserBar: React.FC<UserBarProps> = ({
   userRole,
+  isAdmin,
   userName,
   onLoginClick,
   onLogoutClick,
@@ -53,6 +55,19 @@ const UserBar: React.FC<UserBarProps> = ({
           >
             {userRole}
           </span>
+          {isAdmin && (
+            <span
+              style={{
+                fontSize: 11,
+                padding: "2px 8px",
+                borderRadius: 4,
+                backgroundColor: "rgba(255, 152, 0, 0.15)",
+                color: "#f59e0b",
+              }}
+            >
+              admin
+            </span>
+          )}
           <button
             onClick={onLogoutClick}
             style={{

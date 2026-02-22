@@ -11,7 +11,6 @@ const emojis: Record<UserRole, string> = {
   student: "🎓",
   teacher: "🧑‍🏫",
   guest: "👀",
-  admin: "🔧",
 };
 
 export const RoleButton: React.FC<RoleButtonProps> = ({ role, onClick }) => {

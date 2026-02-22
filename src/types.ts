@@ -16,16 +16,23 @@ export interface Person {
   isManual?: boolean;
 }
 
-export type UserRole = 'guest' | 'student' | 'teacher' | 'researcher' | 'admin';
+export type UserRole = "guest" | "student" | "teacher" | "researcher";
+
+/** Backend persona — determines what features a non-admin user sees. */
+export type UserPersona = "guest" | "student" | "teacher" | "researcher";
+
+/** Backend role — admin vs regular user. */
+export type BackendRole = "admin" | "user";
 
 export interface User {
   id: number;
   email: string;
   username: string;
-  role: UserRole;
+  role: BackendRole;
+  persona: UserPersona;
 }
 
-export type ProposedEditStatus = 'pending' | 'approved' | 'rejected';
+export type ProposedEditStatus = "pending" | "approved" | "rejected";
 
 export interface ProposedEdit {
   id: string;

@@ -1,13 +1,15 @@
-import { configureStore } from '@reduxjs/toolkit';
-import personsReducer from './personsSlice';
-import authReducer from './authSlice';
-import filtersReducer from './filtersSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import personsReducer from "./personsSlice";
+import authReducer from "./authSlice";
+import filtersReducer from "./filtersSlice";
+import bookmarksReducer from "./bookmarksSlice";
 
 export const store = configureStore({
   reducer: {
     persons: personsReducer,
     auth: authReducer,
     filters: filtersReducer,
+    bookmarks: bookmarksReducer,
   },
 });
 

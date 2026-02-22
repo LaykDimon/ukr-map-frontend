@@ -10,6 +10,7 @@ import {
   logout,
   selectUserRole,
   selectUserName,
+  selectIsAdmin,
 } from "./store/authSlice";
 import { User } from "./types";
 import api from "./api";
@@ -38,6 +39,7 @@ const PageLoader = () => (
 function App() {
   const dispatch = useAppDispatch();
   const userRole = useAppSelector(selectUserRole);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const userName = useAppSelector(selectUserName);
   const token = useAppSelector((s) => s.auth.token);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
@@ -90,6 +92,7 @@ function App() {
               element={
                 <MapView
                   userRole={userRole}
+                  isAdmin={isAdmin}
                   userName={userName}
                   onLoginClick={() => setAuthModalOpen(true)}
                   onLogoutClick={handleLogout}

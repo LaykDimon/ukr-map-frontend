@@ -1,25 +1,27 @@
 import React, { useState } from "react";
 import { Person } from "../../types";
 
-interface RemovedPeoplePanelProps {
-  removedPeople: Person[];
-  onRestore: (person: Person) => void;
+interface BookmarksPanelProps {
+  bookmarkedPeople: Person[];
+  onRemoveBookmark: (person: Person) => void;
+  onPersonClick: (person: Person) => void;
 }
 
-const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
-  removedPeople,
-  onRestore,
+const BookmarksPanel: React.FC<BookmarksPanelProps> = ({
+  bookmarkedPeople,
+  onRemoveBookmark,
+  onPersonClick,
 }) => {
   const [showList, setShowList] = useState(false);
 
-  if (removedPeople.length === 0) return null;
+  if (bookmarkedPeople.length === 0) return null;
 
   return (
     <div
       style={{
         position: "absolute",
         bottom: 120,
-        right: 20,
+        left: 20,
         zIndex: 1000,
         width: showList ? 300 : 50,
         height: showList ? "auto" : 50,
@@ -33,6 +35,7 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
         border: "1px solid var(--border-secondary)",
       }}
     >
+      {/* Header / toggle */}
       <div
         onClick={() => setShowList(!showList)}
         style={{
@@ -51,13 +54,13 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
               width: 30,
               height: 30,
               borderRadius: 6,
-              background: "rgba(255, 75, 75, 0.15)",
+              background: "rgba(255, 193, 7, 0.15)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <span style={{ fontSize: 16 }}>🗑️</span>
+            <span style={{ fontSize: 16 }}>★</span>
           </div>
           {showList && (
             <span
@@ -67,7 +70,7 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
                 color: "var(--text-primary)",
               }}
             >
-              Hidden ({removedPeople.length})
+              Bookmarks ({bookmarkedPeople.length})
             </span>
           )}
         </div>
@@ -80,6 +83,7 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
         )}
       </div>
 
+      {/* List */}
       {showList && (
         <div
           style={{
@@ -89,7 +93,7 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
           }}
         >
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {removedPeople.map((person) => (
+            {bookmarkedPeople.map((person) => (
               <li
                 key={person.id}
                 style={{
@@ -99,38 +103,59 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
                   justifyContent: "space-between",
                   borderBottom: "1px solid var(--border-primary)",
                   transition: "background-color 0.2s",
+                  cursor: "pointer",
                 }}
+                onClick={() => onPersonClick(person)}
+                title="Fly to on map"
               >
-                <span
+                <div
                   style={{
-                    fontSize: 13,
-                    color: "var(--text-secondary)",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                     maxWidth: 180,
                   }}
                 >
-                  {person.name}
-                </span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    {person.name}
+                  </span>
+                  {person.birthYear && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "var(--text-muted)",
+                        marginLeft: 4,
+                      }}
+                    >
+                      ({person.birthYear})
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRestore(person);
+                    onRemoveBookmark(person);
                   }}
                   style={{
-                    background: "rgba(74, 144, 226, 0.1)",
-                    border: "1px solid rgba(74, 144, 226, 0.3)",
-                    color: "var(--accent)",
+                    background: "rgba(255, 75, 75, 0.1)",
+                    border: "1px solid rgba(255, 75, 75, 0.3)",
+                    color: "var(--danger)",
                     borderRadius: 4,
                     padding: "4px 8px",
                     fontSize: 12,
                     fontWeight: 500,
                     cursor: "pointer",
                     transition: "all 0.2s",
+                    flexShrink: 0,
                   }}
+                  title="Remove bookmark"
                 >
-                  Restore
+                  ×
                 </button>
               </li>
             ))}
@@ -141,4 +166,4 @@ const RemovedPeoplePanel: React.FC<RemovedPeoplePanelProps> = ({
   );
 };
 
-export default RemovedPeoplePanel;
+export default BookmarksPanel;

@@ -1,5 +1,11 @@
 import axios from "axios";
-import { Person, ProposedEdit, ProposedEditStatus } from "./types";
+import {
+  Person,
+  ProposedEdit,
+  ProposedEditStatus,
+  BackendRole,
+  UserPersona,
+} from "./types";
 import { isTokenExpired } from "./store/tokenUtils";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -153,6 +159,24 @@ export const proposedEditsApi = {
       action,
       reviewComment,
     }),
+};
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  role: BackendRole;
+  persona: UserPersona;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const usersApi = {
+  getAll: () => api.get<AdminUser[]>("/users"),
+  updateRole: (id: number, role: BackendRole) =>
+    api.patch<AdminUser>(`/users/${id}/role`, { role }),
+  updatePersona: (id: number, persona: UserPersona) =>
+    api.patch<AdminUser>(`/users/${id}/persona`, { persona }),
 };
 
 export default api;

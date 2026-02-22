@@ -53,7 +53,13 @@ describe("Navbar", () => {
   it("should show Admin link for admin users", () => {
     renderWithProviders(<Navbar />, {
       auth: {
-        user: { id: 1, email: "a@b.com", username: "admin", role: "admin" },
+        user: {
+          id: 1,
+          email: "a@b.com",
+          username: "admin",
+          role: "admin",
+          persona: "student",
+        },
         token: makeFakeJwt(),
       },
     });
@@ -63,7 +69,13 @@ describe("Navbar", () => {
   it("should NOT show Admin link for student users", () => {
     renderWithProviders(<Navbar />, {
       auth: {
-        user: { id: 2, email: "s@b.com", username: "student", role: "student" },
+        user: {
+          id: 2,
+          email: "s@b.com",
+          username: "student",
+          role: "user",
+          persona: "student",
+        },
         token: makeFakeJwt(),
       },
     });

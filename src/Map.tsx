@@ -34,9 +34,16 @@ import ExportButton from "./components/map/ExportButton";
 import LayerSwitcher from "./components/map/LayerSwitcher";
 import GeolocationButton from "./components/map/GeolocationButton";
 import FilterPanel from "./components/map/FilterPanel";
+import BookmarksPanel from "./components/map/BookmarksPanel";
+import {
+  toggleBookmark,
+  removeBookmark,
+  selectBookmarkedIds,
+} from "./store/bookmarksSlice";
 
 interface MapProps {
   userRole: UserRole;
+  isAdmin?: boolean;
   userName?: string;
   onLoginClick: () => void;
   onLogoutClick: () => void;
@@ -44,6 +51,7 @@ interface MapProps {
 
 const MapView: React.FC<MapProps> = ({
   userRole,
+  isAdmin,
   userName,
   onLoginClick,
   onLogoutClick,
@@ -58,6 +66,7 @@ const MapView: React.FC<MapProps> = ({
   const category = useAppSelector((s) => s.filters.category);
   const birthPlace = useAppSelector((s) => s.filters.birthPlace);
   const birthYearRange = useAppSelector((s) => s.filters.birthYearRange);
+  const bookmarkedIds = useAppSelector(selectBookmarkedIds);
 
   const [activePerson, setActivePerson] = useState<Person | null>(null);
   const [hoveredPerson, setHoveredPerson] = useState<Person | null>(null);
@@ -149,6 +158,21 @@ const MapView: React.FC<MapProps> = ({
     setActivePerson(person);
   };
 
+  const handleToggleBookmark = useCallback(
+    (person: Person) => dispatch(toggleBookmark(person.id)),
+    [dispatch],
+  );
+
+  const handleRemoveBookmark = useCallback(
+    (person: Person) => dispatch(removeBookmark(person.id)),
+    [dispatch],
+  );
+
+  const bookmarkedPeople = useMemo(
+    () => persons.filter((p) => bookmarkedIds.includes(p.id)),
+    [persons, bookmarkedIds],
+  );
+
   return (
     <div style={{ position: "relative", height: "100vh" }}>
       {/* Loading indicator for persons data */}
@@ -204,6 +228,7 @@ const MapView: React.FC<MapProps> = ({
 
       <UserBar
         userRole={userRole}
+        isAdmin={isAdmin}
         userName={userName}
         onLoginClick={onLoginClick}
         onLogoutClick={onLogoutClick}
@@ -257,7 +282,9 @@ const MapView: React.FC<MapProps> = ({
             people={displayPeople}
             hoveredPerson={hoveredPerson}
             userRole={userRole}
+            bookmarkedIds={bookmarkedIds}
             onRemove={handleRemovePerson}
+            onToggleBookmark={handleToggleBookmark}
             showMarkers={showMarkers}
           />
           {activePerson && <JumpToPerson person={activePerson} />}
@@ -277,6 +304,14 @@ const MapView: React.FC<MapProps> = ({
         <RemovedPeoplePanel
           removedPeople={removedPeople}
           onRestore={handleRestorePerson}
+        />
+      )}
+
+      {userRole !== "guest" && bookmarkedPeople.length > 0 && (
+        <BookmarksPanel
+          bookmarkedPeople={bookmarkedPeople}
+          onRemoveBookmark={handleRemoveBookmark}
+          onPersonClick={setActivePerson}
         />
       )}
     </div>

@@ -9,7 +9,9 @@ interface PersonMarkerProps {
   displayLng?: number;
   isHovered: boolean;
   userRole: UserRole;
+  isBookmarked?: boolean;
   onRemove: (person: Person) => void;
+  onToggleBookmark?: (person: Person) => void;
 }
 
 const PersonMarker: React.FC<PersonMarkerProps> = ({
@@ -18,7 +20,9 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
   displayLng,
   isHovered,
   userRole,
+  isBookmarked,
   onRemove,
+  onToggleBookmark,
 }) => {
   const [showProposeEdit, setShowProposeEdit] = useState(false);
   if (!person.lat || !person.lng) return null;
@@ -31,9 +35,12 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
       <CircleMarker
         center={[lat, lng]}
         radius={(isHovered ? 6 : 2.5) + Math.sqrt(person.rating)}
-        fillColor={isHovered ? "orange" : "blue"}
-        color="white"
-        fillOpacity={0.8}
+        pathOptions={{
+          fillColor: isHovered ? "orange" : isBookmarked ? "#f0a500" : "blue",
+          color: isBookmarked ? "#ffd54f" : "white",
+          fillOpacity: 0.8,
+          weight: isBookmarked ? 3 : 2,
+        }}
         eventHandlers={{
           mouseover: (e) =>
             e.target.setStyle({
@@ -42,7 +49,11 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
             }),
           mouseout: (e) =>
             e.target.setStyle({
-              fillColor: isHovered ? "orange" : "blue",
+              fillColor: isHovered
+                ? "orange"
+                : isBookmarked
+                  ? "#f0a500"
+                  : "blue",
               radius: (isHovered ? 6 : 2.5) + Math.sqrt(person.rating),
             }),
         }}
@@ -103,6 +114,32 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
               </h3>
               {userRole !== "guest" && (
                 <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
+                  {onToggleBookmark && (
+                    <button
+                      onClick={() => onToggleBookmark(person)}
+                      style={{
+                        background: isBookmarked
+                          ? "rgba(255, 193, 7, 0.15)"
+                          : "rgba(255, 193, 7, 0.05)",
+                        border: `1px solid ${isBookmarked ? "rgba(255, 193, 7, 0.5)" : "rgba(255, 193, 7, 0.25)"}`,
+                        color: isBookmarked ? "#f0a500" : "var(--text-muted)",
+                        borderRadius: "4px",
+                        padding: "4px 8px",
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        flexShrink: 0,
+                      }}
+                      title={
+                        isBookmarked
+                          ? "Remove from bookmarks"
+                          : "Add to bookmarks"
+                      }
+                    >
+                      {isBookmarked ? "★" : "☆"}
+                    </button>
+                  )}
                   <button
                     onClick={() => setShowProposeEdit(true)}
                     style={{

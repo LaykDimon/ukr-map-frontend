@@ -18,7 +18,9 @@ interface ClusteredMarkersProps {
   people: Person[];
   hoveredPerson: Person | null;
   userRole: UserRole;
+  bookmarkedIds?: string[];
   onRemove: (person: Person) => void;
+  onToggleBookmark?: (person: Person) => void;
   showMarkers?: boolean;
 }
 
@@ -26,7 +28,9 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
   people,
   hoveredPerson,
   userRole,
+  bookmarkedIds = [],
   onRemove,
+  onToggleBookmark,
   showMarkers = true,
 }) => {
   const map = useMap();
@@ -165,7 +169,9 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
             displayLng={lng}
             isHovered={hoveredPerson === person}
             userRole={userRole}
+            isBookmarked={bookmarkedIds.includes(person.id)}
             onRemove={onRemove}
+            onToggleBookmark={onToggleBookmark}
           />
         );
       })}
