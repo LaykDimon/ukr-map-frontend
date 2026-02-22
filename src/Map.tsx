@@ -60,6 +60,7 @@ const MapView: React.FC<MapProps> = ({
   const persons = useAppSelector((s) => s.persons.items);
   const removedIds = useAppSelector((s) => s.persons.removedIds);
   const personsLoading = useAppSelector((s) => s.persons.loading);
+  const totalCount = useAppSelector((s) => s.persons.totalCount);
   const searchResults = useAppSelector((s) => s.persons.searchResults);
   const search = useAppSelector((s) => s.filters.search);
   const maxCount = useAppSelector((s) => s.filters.maxCount);
@@ -211,7 +212,7 @@ const MapView: React.FC<MapProps> = ({
           />
           Loading{" "}
           {persons.length > 0
-            ? `${persons.length.toLocaleString()} persons…`
+            ? `${persons.length.toLocaleString()}${totalCount ? ` of ${totalCount.toLocaleString()}` : ""} persons…`
             : "persons…"}
         </div>
       )}

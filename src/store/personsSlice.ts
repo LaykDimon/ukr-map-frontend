@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { personsApi, SearchResult } from "../api";
+import { personsApi, statisticsApi, SearchResult } from "../api";
 import { Person } from "../types";
 
 const BATCH_SIZE = 2000;
@@ -9,6 +9,7 @@ interface PersonsState {
   removedIds: string[];
   loading: boolean;
   loadingProgress: number | null; // percentage 0-100
+  totalCount: number | null; // total persons in DB (fetched once)
   error: string | null;
   searchResults: SearchResult[];
   searchLoading: boolean;
@@ -19,6 +20,7 @@ const initialState: PersonsState = {
   removedIds: JSON.parse(localStorage.getItem("removedIds") || "[]"),
   loading: false,
   loadingProgress: null,
+  totalCount: null,
   error: null,
   searchResults: [],
   searchLoading: false,
@@ -27,8 +29,14 @@ const initialState: PersonsState = {
 export const fetchPersons = createAsyncThunk(
   "persons/fetchAll",
   async (_, { dispatch }) => {
-    // Load first batch quickly so the user sees data fast
-    const first = await personsApi.getPage(0, BATCH_SIZE);
+    // Fetch total count in parallel with first data batch
+    const [first, overview] = await Promise.all([
+      personsApi.getPage(0, BATCH_SIZE),
+      statisticsApi.overview().catch(() => null),
+    ]);
+    if (overview?.data?.totalPersons) {
+      dispatch(personsSlice.actions.setTotalCount(overview.data.totalPersons));
+    }
     const firstBatch = first.data;
     if (firstBatch.length < BATCH_SIZE) {
       // All data fits in one batch
@@ -77,6 +85,9 @@ const personsSlice = createSlice({
     },
     appendBatch(state, action: PayloadAction<Person[]>) {
       state.items = action.payload;
+    },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
     },
   },
   extraReducers: (builder) => {
