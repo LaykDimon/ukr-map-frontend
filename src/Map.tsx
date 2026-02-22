@@ -80,8 +80,10 @@ const MapView: React.FC<MapProps> = ({
   );
 
   useEffect(() => {
-    dispatch(fetchPersons());
-  }, [dispatch]);
+    if (persons.length === 0) {
+      dispatch(fetchPersons());
+    }
+  }, [dispatch, persons.length]);
 
   const removedPeople = useMemo(
     () => persons.filter((p) => removedIds.includes(p.id)),
