@@ -14,6 +14,11 @@ export interface Person {
   imageUrl?: string;
   category?: string;
   isManual?: boolean;
+  meta_data?: {
+    deathPlace?: string;
+    deathYear?: number;
+    occupation?: string[];
+  };
 }
 
 export type UserRole = "guest" | "student" | "teacher" | "researcher";

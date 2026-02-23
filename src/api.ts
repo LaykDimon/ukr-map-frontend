@@ -104,6 +104,8 @@ export const personsApi = {
     api.get<Person[]>("/persons/geo/radius", {
       params: { lat, lng, radius, limit },
     }),
+  geoPolygon: (polygon: GeoJSON.Geometry, limit = 100) =>
+    api.post<Person[]>("/persons/geo/polygon", { polygon, limit }),
 };
 
 export interface TemporalEntry {

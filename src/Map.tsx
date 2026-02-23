@@ -37,6 +37,7 @@ import LayerSwitcher from "./components/map/LayerSwitcher";
 import GeolocationButton from "./components/map/GeolocationButton";
 import FilterPanel from "./components/map/FilterPanel";
 import BookmarksPanel from "./components/map/BookmarksPanel";
+import GeoSearchPanel from "./components/map/GeoSearchPanel";
 import {
   toggleBookmark,
   removeBookmark,
@@ -76,6 +77,7 @@ const MapView: React.FC<MapProps> = ({
   const [activePerson, setActivePerson] = useState<Person | null>(null);
   const [hoveredPerson, setHoveredPerson] = useState<Person | null>(null);
   const [showMarkers, setShowMarkers] = useState(true);
+  const [geoResults, setGeoResults] = useState<Person[]>([]);
   const hoveredPersonRef = useRef<Person | null>(null);
 
   // Stable callback that updates ref (for ClusteredMarkers) and state only when needed
@@ -212,15 +214,28 @@ const MapView: React.FC<MapProps> = ({
     birthDate,
   ]);
 
-  // Merge fuzzy search results into map markers so they're always visible
+  // Merge fuzzy search results and geo search results into map markers
   const displayPeople = useMemo(() => {
-    if (searchResults.length === 0) return filteredPeople;
-    const ids = new Set(filteredPeople.map((p) => p.id));
-    const extras = searchResults
-      .map((r) => r.person)
-      .filter((p) => p.lat && p.lng && !ids.has(p.id));
-    return extras.length > 0 ? [...filteredPeople, ...extras] : filteredPeople;
-  }, [filteredPeople, searchResults]);
+    let result = filteredPeople;
+
+    // Merge text search results
+    if (searchResults.length > 0) {
+      const ids = new Set(result.map((p) => p.id));
+      const extras = searchResults
+        .map((r) => r.person)
+        .filter((p) => p.lat && p.lng && !ids.has(p.id));
+      if (extras.length > 0) result = [...result, ...extras];
+    }
+
+    // Merge geo search results
+    if (geoResults.length > 0) {
+      const ids = new Set(result.map((p) => p.id));
+      const extras = geoResults.filter((p) => p.lat && p.lng && !ids.has(p.id));
+      if (extras.length > 0) result = [...result, ...extras];
+    }
+
+    return result;
+  }, [filteredPeople, searchResults, geoResults]);
 
   const handleRemovePerson = (person: Person) => {
     dispatch(removePerson(person.id));
@@ -241,6 +256,14 @@ const MapView: React.FC<MapProps> = ({
     (person: Person) => dispatch(removeBookmark(person.id)),
     [dispatch],
   );
+
+  const handleGeoResults = useCallback((results: Person[]) => {
+    setGeoResults(results);
+  }, []);
+
+  const handleGeoClear = useCallback(() => {
+    setGeoResults([]);
+  }, []);
 
   const bookmarkedPeople = useMemo(
     () => persons.filter((p) => bookmarkedIds.includes(p.id)),
@@ -369,6 +392,13 @@ const MapView: React.FC<MapProps> = ({
           {activePerson && <JumpToPerson person={activePerson} />}
           <ResetViewButton />
           <GeolocationButton />
+          {userRole !== "guest" && (
+            <GeoSearchPanel
+              onResults={handleGeoResults}
+              onClear={handleGeoClear}
+              onPersonClick={setActivePerson}
+            />
+          )}
         </MapContainer>
       </div>
 

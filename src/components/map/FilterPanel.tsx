@@ -1,8 +1,34 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Person } from "../../types";
 import { useTheme } from "../../store/themeContext";
+
+const toRoman = (num: number): string => {
+  const pairs: [number, string][] = [
+    [1000, "M"],
+    [900, "CM"],
+    [500, "D"],
+    [400, "CD"],
+    [100, "C"],
+    [90, "XC"],
+    [50, "L"],
+    [40, "XL"],
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"],
+  ];
+  let result = "";
+  for (const [value, symbol] of pairs) {
+    while (num >= value) {
+      result += symbol;
+      num -= value;
+    }
+  }
+  return result;
+};
 
 interface FilterPanelProps {
   persons: Person[];
@@ -52,6 +78,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onReset,
 }) => {
   const { theme } = useTheme();
+  const [showCenturies, setShowCenturies] = useState(false);
   const categories = useMemo(() => {
     const cats = new Set<string>();
     persons.forEach((p) => {
@@ -184,6 +211,76 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             style={yearInputStyle}
           />
         </div>
+      </div>
+
+      {/* Century quick-select */}
+      <div style={{ marginBottom: 10 }}>
+        <button
+          onClick={() => setShowCenturies((v) => !v)}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--text-tertiary)",
+            fontSize: 11,
+            cursor: "pointer",
+            padding: 0,
+            marginBottom: 4,
+            textDecoration: "underline",
+          }}
+        >
+          {showCenturies ? "▾ Hide centuries" : "▸ Quick century select"}
+        </button>
+        {showCenturies && (
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {(() => {
+              const years = persons
+                .map((p) => p.birthYear)
+                .filter((y): y is number => y != null);
+              if (years.length === 0) return [];
+              const minCentIdx = Math.floor(Math.min(...years) / 100);
+              const maxCentIdx = Math.floor(Math.max(...years) / 100);
+              const centuries: { label: string; from: number; to: number }[] =
+                [];
+              for (let i = minCentIdx; i <= maxCentIdx; i++) {
+                centuries.push({
+                  label: toRoman(i + 1),
+                  from: i * 100,
+                  to: i * 100 + 99,
+                });
+              }
+              return centuries;
+            })().map((c) => {
+              const isActive =
+                birthYearRange[0] === c.from && birthYearRange[1] === c.to;
+              return (
+                <button
+                  key={c.label}
+                  onClick={() => {
+                    if (isActive) {
+                      onBirthYearRangeChange([null, null]);
+                    } else {
+                      onBirthYearRangeChange([c.from, c.to]);
+                    }
+                  }}
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: 4,
+                    border: "1px solid var(--border-tertiary)",
+                    backgroundColor: isActive
+                      ? "var(--accent)"
+                      : "var(--bg-input)",
+                    color: isActive ? "#fff" : "var(--text-primary)",
+                    cursor: "pointer",
+                    fontSize: 11,
+                    transition: "background-color 0.15s",
+                  }}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <label
