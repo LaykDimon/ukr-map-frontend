@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { CircleMarker, Tooltip, Popup } from "react-leaflet";
 import { Person, UserRole } from "../../types";
 import ProposeEditModal from "./ProposeEditModal";
+import { personsApi } from "../../api";
 
 interface PersonMarkerProps {
   person: Person;
@@ -27,6 +28,29 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
   onToggleBookmark,
 }) => {
   const [showProposeEdit, setShowProposeEdit] = useState(false);
+  const [fullPerson, setFullPerson] = useState<Person | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+
+  /** Lazy-load biography on popup open via GET /persons/:id */
+  const handlePopupOpen = useCallback(async () => {
+    if (person.summary !== undefined || fullPerson) return;
+    setLoadingSummary(true);
+    try {
+      const res = await personsApi.getOne(person.id);
+      setFullPerson(res.data);
+    } catch {
+      /* network error — popup shows without summary */
+    } finally {
+      setLoadingSummary(false);
+    }
+  }, [person.id, person.summary, fullPerson]);
+
+  /** Merged person with lazy-loaded fields for display & propose-edit */
+  const displayPerson = fullPerson
+    ? { ...person, summary: fullPerson.summary }
+    : person;
+  const displaySummary = displayPerson.summary;
+
   if (!person.lat || !person.lng) return null;
 
   const lat = displayLat ?? person.lat;
@@ -48,6 +72,7 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
           weight: isBookmarked ? 3 : 2,
         }}
         eventHandlers={{
+          popupopen: handlePopupOpen,
           mouseover: (e) =>
             e.target.setStyle({
               fillColor: "yellow",
@@ -184,7 +209,18 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
                   </button>
                 </div>
               )}
-              {person.summary && (
+              {loadingSummary && (
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.9em",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  Loading biography…
+                </p>
+              )}
+              {displaySummary && (
                 <p
                   style={{
                     margin: 0,
@@ -192,9 +228,9 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
                     lineHeight: 1.4,
                   }}
                 >
-                  {person.summary.length > 550
-                    ? person.summary.slice(0, 550) + "..."
-                    : person.summary}
+                  {displaySummary.length > 550
+                    ? displaySummary.slice(0, 550) + "..."
+                    : displaySummary}
                 </p>
               )}
               {person.birthDate && (
@@ -236,7 +272,7 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
       </CircleMarker>
       {showProposeEdit && (
         <ProposeEditModal
-          person={person}
+          person={displayPerson}
           onClose={() => setShowProposeEdit(false)}
         />
       )}

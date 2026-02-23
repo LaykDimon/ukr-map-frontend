@@ -106,16 +106,24 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
 
     const filtered = people.filter((p) => p.lat && p.lng);
 
+    // Deduplicate by person ID to prevent duplicate-key React warnings
+    const seen = new Set<string>();
+    const unique = filtered.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+
     // Count how many people share exact same coordinates
     const coordCounts = new Map<string, number>();
     const coordIndices = new Map<string, number>();
-    for (const p of filtered) {
+    for (const p of unique) {
       const key = `${p.lat},${p.lng}`;
       coordCounts.set(key, (coordCounts.get(key) || 0) + 1);
     }
 
-    const points: Supercluster.PointFeature<{ person: Person }>[] =
-      filtered.map((person) => {
+    const points: Supercluster.PointFeature<{ person: Person }>[] = unique.map(
+      (person) => {
         let lat = person.lat!;
         let lng = person.lng!;
         const key = `${person.lat},${person.lng}`;
@@ -153,7 +161,8 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
             coordinates: [lng, lat],
           },
         };
-      });
+      },
+    );
 
     sc.load(points);
     return sc;

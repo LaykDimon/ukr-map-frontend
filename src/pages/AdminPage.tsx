@@ -231,11 +231,21 @@ const AdminPage: React.FC = () => {
     setFormOpen(true);
   };
 
-  const openEditForm = (person: Person) => {
+  const openEditForm = async (person: Person) => {
     setEditingPerson(person);
+    // Lazy-load full person (including summary) if not already present
+    let summary = person.summary || "";
+    if (!person.summary) {
+      try {
+        const res = await personsApi.getOne(person.id);
+        summary = res.data.summary || "";
+      } catch {
+        /* use empty summary */
+      }
+    }
     setForm({
       name: person.name,
-      summary: person.summary || "",
+      summary,
       birthYear: person.birthYear,
       birthDate: person.birthDate || "",
       birthPlace: person.birthPlace || "",
