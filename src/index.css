@@ -336,3 +336,83 @@ input[type="number"] {
 body.modal-open {
   overflow: hidden;
 }
+
+/* ── Filter panel date-picker ── */
+.filter-datepicker {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-tertiary);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* react-datepicker wrapper should fill the parent width */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+/* Dark theme overrides for the datepicker popup */
+.filter-datepicker-dark ~ .react-datepicker-popper .react-datepicker,
+[data-theme="dark"] .react-datepicker {
+  background-color: #1e1e1e;
+  border-color: #444;
+  color: #eee;
+}
+
+[data-theme="dark"] .react-datepicker__header {
+  background-color: #222;
+  border-bottom-color: #444;
+}
+
+[data-theme="dark"] .react-datepicker__current-month,
+[data-theme="dark"] .react-datepicker__day-name,
+[data-theme="dark"] .react-datepicker__day {
+  color: #eee;
+}
+
+[data-theme="dark"] .react-datepicker__day:hover {
+  background-color: #333;
+}
+
+[data-theme="dark"] .react-datepicker__day--selected,
+[data-theme="dark"] .react-datepicker__day--keyboard-selected {
+  background-color: #0088fe;
+  color: #fff;
+}
+
+[data-theme="dark"] .react-datepicker__day--outside-month {
+  color: #666;
+}
+
+[data-theme="dark"] .react-datepicker__navigation-icon::before {
+  border-color: #aaa;
+}
+
+[data-theme="dark"] .react-datepicker__year-dropdown,
+[data-theme="dark"] .react-datepicker__month-dropdown {
+  background-color: #1e1e1e;
+  border-color: #444;
+}
+
+[data-theme="dark"] .react-datepicker__year-option:hover,
+[data-theme="dark"] .react-datepicker__month-option:hover {
+  background-color: #333;
+}
+
+[data-theme="dark"] .react-datepicker__year-option,
+[data-theme="dark"] .react-datepicker__month-option {
+  color: #eee;
+}
+
+[data-theme="dark"] .react-datepicker select {
+  background-color: #222;
+  color: #eee;
+  border-color: #555;
+}
+
+[data-theme="dark"] .react-datepicker__close-icon::after {
+  background-color: #666;
+}

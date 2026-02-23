@@ -19,6 +19,7 @@ import {
   TemporalEntry,
   GeoEntry,
   CategoryEntry,
+  DeathPlaceEntry,
   OverviewData,
 } from "../api";
 
@@ -105,22 +106,25 @@ const StatisticsPage: React.FC = () => {
   const [temporal, setTemporal] = useState<TemporalEntry[]>([]);
   const [geo, setGeo] = useState<GeoEntry[]>([]);
   const [categories, setCategories] = useState<CategoryEntry[]>([]);
+  const [deathPlaces, setDeathPlaces] = useState<DeathPlaceEntry[]>([]);
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [t, g, c, o] = await Promise.all([
+        const [t, g, c, dp, o] = await Promise.allSettled([
           statisticsApi.temporal(),
           statisticsApi.geo(15),
           statisticsApi.categories(),
+          statisticsApi.deathPlaces(15),
           statisticsApi.overview(),
         ]);
-        setTemporal(t.data);
-        setGeo(g.data);
-        setCategories(c.data);
-        setOverview(o.data);
+        if (t.status === "fulfilled") setTemporal(t.value.data);
+        if (g.status === "fulfilled") setGeo(g.value.data);
+        if (c.status === "fulfilled") setCategories(c.value.data);
+        if (dp.status === "fulfilled") setDeathPlaces(dp.value.data);
+        if (o.status === "fulfilled") setOverview(o.value.data);
       } catch (err) {
         console.error("Failed to load statistics:", err);
       } finally {
@@ -267,6 +271,45 @@ const StatisticsPage: React.FC = () => {
               <Bar dataKey="count" fill="#00C49F" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+
+        {/* Top death places */}
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0 }}>Top death places</h3>
+          {deathPlaces.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={deathPlaces} layout="vertical">
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--border-primary)"
+                />
+                <XAxis type="number" stroke="var(--text-muted)" />
+                <YAxis
+                  dataKey="deathPlace"
+                  type="category"
+                  width={140}
+                  stroke="var(--text-muted)"
+                  tick={{ fontSize: 11 }}
+                  interval={0}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--bg-card)",
+                    border: "1px solid var(--border-secondary)",
+                    borderRadius: 6,
+                    color: "var(--text-primary)",
+                  }}
+                  itemStyle={{ color: "var(--text-primary)" }}
+                  labelStyle={{ color: "var(--text-secondary)" }}
+                />
+                <Bar dataKey="count" fill="#FF8042" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
+              No death place data available yet.
+            </p>
+          )}
         </div>
 
         {/* Categories pie chart */}

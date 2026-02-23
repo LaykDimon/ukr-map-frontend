@@ -14,11 +14,59 @@ function seededRandom(seed: number) {
   };
 }
 
+/**
+ * Parse a hex colour (#rgb or #rrggbb) into [r,g,b].
+ */
+function hexToRgb(hex: string): [number, number, number] {
+  let h = hex.replace("#", "");
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  return [
+    parseInt(h.slice(0, 2), 16),
+    parseInt(h.slice(2, 4), 16),
+    parseInt(h.slice(4, 6), 16),
+  ];
+}
+
+function rgbToHex(r: number, g: number, b: number) {
+  return (
+    "#" +
+    [r, g, b]
+      .map((c) =>
+        Math.max(0, Math.min(255, Math.round(c)))
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("")
+  );
+}
+
+/**
+ * Derive 3 cluster colours (low / medium / high density) from a base colour.
+ * When the default marker colour is used, return the original blue / yellow / red
+ * palette. Otherwise derive shades from the chosen colour.
+ */
+const DEFAULT_MARKER = "#3388ff";
+const DEFAULT_CLUSTER: [string, string, string] = [
+  "#3498db",
+  "#f39c12",
+  "#e74c3c",
+];
+
+function clusterColors(base: string): [string, string, string] {
+  if (base === DEFAULT_MARKER) return DEFAULT_CLUSTER;
+  const [r, g, b] = hexToRgb(base);
+  const low = rgbToHex(r, g, b);
+  const mid = rgbToHex(r * 0.8, g * 0.7, b * 0.5);
+  const high = rgbToHex(Math.min(255, r * 0.9 + 60), g * 0.35, b * 0.3);
+  return [low, mid, high];
+}
+
 interface ClusteredMarkersProps {
   people: Person[];
   hoveredPerson: Person | null;
   userRole: UserRole;
   bookmarkedIds?: string[];
+  markerColor?: string;
   onRemove: (person: Person) => void;
   onToggleBookmark?: (person: Person) => void;
   showMarkers?: boolean;
@@ -29,6 +77,7 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
   hoveredPerson,
   userRole,
   bookmarkedIds = [],
+  markerColor = "#3388ff",
   onRemove,
   onToggleBookmark,
   showMarkers = true,
@@ -121,6 +170,8 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
 
   if (!showMarkers) return null;
 
+  const [clrLow, clrMid, clrHigh] = clusterColors(markerColor);
+
   return (
     <>
       {clusters.map((feature) => {
@@ -137,12 +188,12 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
               key={`cluster-${feature.id}`}
               center={[lat, lng]}
               radius={size}
-              fillColor={
-                count > 100 ? "#e74c3c" : count > 20 ? "#f39c12" : "#3498db"
-              }
-              color="white"
-              weight={2}
-              fillOpacity={0.8}
+              pathOptions={{
+                fillColor: count > 100 ? clrHigh : count > 20 ? clrMid : clrLow,
+                color: "white",
+                weight: 2,
+                fillOpacity: 0.8,
+              }}
               eventHandlers={{
                 click: () => {
                   const expansionZoom = Math.min(
@@ -170,6 +221,7 @@ const ClusteredMarkers: React.FC<ClusteredMarkersProps> = ({
             isHovered={hoveredPerson === person}
             userRole={userRole}
             isBookmarked={bookmarkedIds.includes(person.id)}
+            markerColor={markerColor}
             onRemove={onRemove}
             onToggleBookmark={onToggleBookmark}
           />

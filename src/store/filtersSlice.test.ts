@@ -4,56 +4,74 @@ import filtersReducer, {
   setCategory,
   setBirthPlace,
   setBirthYearRange,
+  setBirthDate,
+  setMarkerColor,
   resetFilters,
-} from './filtersSlice';
+} from "./filtersSlice";
 
 const initialState = {
-  search: '',
-  maxCount: 'all',
-  category: '',
-  birthPlace: '',
+  search: "",
+  maxCount: "all",
+  category: "",
+  birthPlace: "",
   birthYearRange: [null, null] as [number | null, number | null],
+  birthDate: "",
+  markerColor: "#3388ff",
 };
 
-describe('filtersSlice', () => {
-  it('should return the initial state', () => {
-    expect(filtersReducer(undefined, { type: 'unknown' })).toEqual(initialState);
+describe("filtersSlice", () => {
+  it("should return the initial state", () => {
+    expect(filtersReducer(undefined, { type: "unknown" })).toEqual(
+      initialState,
+    );
   });
 
-  it('should handle setSearch', () => {
-    const state = filtersReducer(initialState, setSearch('Taras'));
-    expect(state.search).toBe('Taras');
+  it("should handle setSearch", () => {
+    const state = filtersReducer(initialState, setSearch("Taras"));
+    expect(state.search).toBe("Taras");
   });
 
-  it('should handle setMaxCount', () => {
-    const state = filtersReducer(initialState, setMaxCount('100'));
-    expect(state.maxCount).toBe('100');
+  it("should handle setMaxCount", () => {
+    const state = filtersReducer(initialState, setMaxCount("100"));
+    expect(state.maxCount).toBe("100");
   });
 
-  it('should handle setCategory', () => {
-    const state = filtersReducer(initialState, setCategory('writer'));
-    expect(state.category).toBe('writer');
+  it("should handle setCategory", () => {
+    const state = filtersReducer(initialState, setCategory("writer"));
+    expect(state.category).toBe("writer");
   });
 
-  it('should handle setBirthPlace', () => {
-    const state = filtersReducer(initialState, setBirthPlace('Kyiv'));
-    expect(state.birthPlace).toBe('Kyiv');
+  it("should handle setBirthPlace", () => {
+    const state = filtersReducer(initialState, setBirthPlace("Kyiv"));
+    expect(state.birthPlace).toBe("Kyiv");
   });
 
-  it('should handle setBirthYearRange', () => {
+  it("should handle setBirthYearRange", () => {
     const state = filtersReducer(initialState, setBirthYearRange([1800, 1900]));
     expect(state.birthYearRange).toEqual([1800, 1900]);
   });
 
-  it('should handle resetFilters', () => {
+  it("should handle resetFilters", () => {
     const modified = {
-      search: 'test',
-      maxCount: '50',
-      category: 'writer',
-      birthPlace: 'Kyiv',
+      search: "test",
+      maxCount: "50",
+      category: "writer",
+      birthPlace: "Kyiv",
       birthYearRange: [1800, 1900] as [number | null, number | null],
+      birthDate: "25.02.1871",
+      markerColor: "#e74c3c",
     };
     const state = filtersReducer(modified, resetFilters());
     expect(state).toEqual(initialState);
+  });
+
+  it("should handle setBirthDate", () => {
+    const state = filtersReducer(initialState, setBirthDate("25.02.1871"));
+    expect(state.birthDate).toBe("25.02.1871");
+  });
+
+  it("should handle setMarkerColor", () => {
+    const state = filtersReducer(initialState, setMarkerColor("#e74c3c"));
+    expect(state.markerColor).toBe("#e74c3c");
   });
 });

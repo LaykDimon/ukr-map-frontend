@@ -10,6 +10,7 @@ interface PersonMarkerProps {
   isHovered: boolean;
   userRole: UserRole;
   isBookmarked?: boolean;
+  markerColor?: string;
   onRemove: (person: Person) => void;
   onToggleBookmark?: (person: Person) => void;
 }
@@ -21,6 +22,7 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
   isHovered,
   userRole,
   isBookmarked,
+  markerColor = "#3388ff",
   onRemove,
   onToggleBookmark,
 }) => {
@@ -36,7 +38,11 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
         center={[lat, lng]}
         radius={(isHovered ? 6 : 2.5) + Math.sqrt(person.rating)}
         pathOptions={{
-          fillColor: isHovered ? "orange" : isBookmarked ? "#f0a500" : "blue",
+          fillColor: isHovered
+            ? "orange"
+            : isBookmarked
+              ? "#f0a500"
+              : markerColor,
           color: isBookmarked ? "#ffd54f" : "white",
           fillOpacity: 0.8,
           weight: isBookmarked ? 3 : 2,
@@ -53,7 +59,7 @@ const PersonMarker: React.FC<PersonMarkerProps> = ({
                 ? "orange"
                 : isBookmarked
                   ? "#f0a500"
-                  : "blue",
+                  : markerColor,
               radius: (isHovered ? 6 : 2.5) + Math.sqrt(person.rating),
             }),
         }}

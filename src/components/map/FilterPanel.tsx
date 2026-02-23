@@ -1,14 +1,21 @@
 import React, { useMemo } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { Person } from "../../types";
+import { useTheme } from "../../store/themeContext";
 
 interface FilterPanelProps {
   persons: Person[];
   category: string;
   birthPlace: string;
   birthYearRange: [number | null, number | null];
+  birthDate: string;
+  markerColor: string;
   onCategoryChange: (category: string) => void;
   onBirthPlaceChange: (birthPlace: string) => void;
   onBirthYearRangeChange: (range: [number | null, number | null]) => void;
+  onBirthDateChange: (date: string) => void;
+  onMarkerColorChange: (color: string) => void;
   onReset: () => void;
 }
 
@@ -35,11 +42,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   category,
   birthPlace,
   birthYearRange,
+  birthDate,
+  markerColor,
   onCategoryChange,
   onBirthPlaceChange,
   onBirthYearRangeChange,
+  onBirthDateChange,
+  onMarkerColorChange,
   onReset,
 }) => {
+  const { theme } = useTheme();
   const categories = useMemo(() => {
     const cats = new Set<string>();
     persons.forEach((p) => {
@@ -51,6 +63,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const hasFilters =
     category !== "" ||
     birthPlace !== "" ||
+    birthDate !== "" ||
+    markerColor !== "#3388ff" ||
     birthYearRange[0] !== null ||
     birthYearRange[1] !== null;
 
@@ -170,6 +184,113 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             style={yearInputStyle}
           />
         </div>
+      </div>
+
+      <label
+        style={{
+          display: "block",
+          marginBottom: 4,
+          color: "var(--text-tertiary)",
+          fontSize: 12,
+        }}
+      >
+        Birth date
+      </label>
+      <DatePicker
+        selected={birthDate ? new Date(birthDate + "T00:00:00") : null}
+        onChange={(date: Date | null) => {
+          if (date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            onBirthDateChange(`${y}-${m}-${d}`);
+          } else {
+            onBirthDateChange("");
+          }
+        }}
+        openToDate={
+          birthDate ? new Date(birthDate + "T00:00:00") : new Date(1900, 0, 1)
+        }
+        minDate={new Date(1000, 0, 1)}
+        maxDate={new Date(new Date().getFullYear(), 11, 31)}
+        dateFormat="dd.MM.yyyy"
+        placeholderText="dd.mm.yyyy"
+        isClearable
+        showYearDropdown
+        showMonthDropdown
+        dropdownMode="select"
+        className={`filter-datepicker ${theme === "dark" ? "filter-datepicker-dark" : ""}`}
+      />
+      {birthDate && (
+        <div
+          style={{
+            fontSize: 11,
+            color: "var(--text-muted)",
+            marginBottom: 10,
+            marginTop: 2,
+          }}
+        >
+          Matches dates containing{" "}
+          {new Date(birthDate + "T00:00:00").toLocaleDateString("uk-UA", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </div>
+      )}
+      {!birthDate && <div style={{ marginBottom: 10 }} />}
+
+      <label
+        style={{
+          display: "block",
+          marginBottom: 4,
+          color: "var(--text-tertiary)",
+          fontSize: 12,
+        }}
+      >
+        Map color theme
+      </label>
+      <div
+        style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}
+      >
+        {["#3388ff", "#e74c3c", "#2ecc71", "#9b59b6", "#f39c12", "#1abc9c"].map(
+          (c) => (
+            <button
+              key={c}
+              onClick={() => onMarkerColorChange(c)}
+              title={c}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                border:
+                  markerColor === c
+                    ? "3px solid var(--text-primary)"
+                    : "2px solid var(--border-tertiary)",
+                backgroundColor: c,
+                cursor: "pointer",
+                padding: 0,
+                boxSizing: "border-box",
+                transition: "border 0.15s",
+              }}
+            />
+          ),
+        )}
+        <input
+          type="color"
+          value={markerColor}
+          onChange={(e) => onMarkerColorChange(e.target.value)}
+          title="Custom color"
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: "50%",
+            border: "2px solid var(--border-tertiary)",
+            padding: 0,
+            cursor: "pointer",
+            backgroundColor: "transparent",
+          }}
+        />
       </div>
 
       {hasFilters && (

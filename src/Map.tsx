@@ -20,6 +20,8 @@ import {
   setCategory,
   setBirthPlace,
   setBirthYearRange,
+  setBirthDate,
+  setMarkerColor,
   resetFilters,
 } from "./store/filtersSlice";
 import ResetViewButton, { ukrBounds } from "./components/map/ResetViewButton";
@@ -67,6 +69,8 @@ const MapView: React.FC<MapProps> = ({
   const category = useAppSelector((s) => s.filters.category);
   const birthPlace = useAppSelector((s) => s.filters.birthPlace);
   const birthYearRange = useAppSelector((s) => s.filters.birthYearRange);
+  const birthDate = useAppSelector((s) => s.filters.birthDate);
+  const markerColor = useAppSelector((s) => s.filters.markerColor);
   const bookmarkedIds = useAppSelector(selectBookmarkedIds);
 
   const [activePerson, setActivePerson] = useState<Person | null>(null);
@@ -128,6 +132,76 @@ const MapView: React.FC<MapProps> = ({
           return false;
         return true;
       })
+      .filter((p) => {
+        if (!birthDate) return true;
+        if (!p.birthDate) return false;
+        // birthDate is YYYY-MM-DD from the date picker
+        const [y, m, d] = birthDate.split("-");
+        const year = parseInt(y);
+        const month = parseInt(m);
+        const day = parseInt(d);
+        const monthPad = String(month).padStart(2, "0");
+        const dayPad = String(day).padStart(2, "0");
+        const dbDate = p.birthDate.trim();
+
+        // 1) Exact match for structured formats first
+        // YYYY-MM-DD
+        const isoMatch = dbDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (isoMatch) {
+          return (
+            parseInt(isoMatch[1]) === year &&
+            parseInt(isoMatch[2]) === month &&
+            parseInt(isoMatch[3]) === day
+          );
+        }
+        // DD.MM.YYYY or DD/MM/YYYY
+        const dotMatch = dbDate.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})/);
+        if (dotMatch) {
+          return (
+            parseInt(dotMatch[3]) === year &&
+            parseInt(dotMatch[2]) === month &&
+            parseInt(dotMatch[1]) === day
+          );
+        }
+
+        // 2) Fuzzy matching for text-based dates:
+        // "23 лютого 1987", "February 23, 1987", etc.
+        const ukMonths = [
+          "січня",
+          "лютого",
+          "березня",
+          "квітня",
+          "травня",
+          "червня",
+          "липня",
+          "серпня",
+          "вересня",
+          "жовтня",
+          "листопада",
+          "грудня",
+        ];
+        const enMonths = [
+          "january",
+          "february",
+          "march",
+          "april",
+          "may",
+          "june",
+          "july",
+          "august",
+          "september",
+          "october",
+          "november",
+          "december",
+        ];
+        const dbLower = dbDate.toLowerCase();
+        const hasYear = dbDate.includes(String(year));
+        const hasDay = new RegExp(`\\b0?${day}\\b`).test(dbDate);
+        const hasMonth =
+          dbLower.includes(ukMonths[month - 1]) ||
+          dbLower.includes(enMonths[month - 1]);
+        return hasYear && hasDay && hasMonth;
+      })
       .sort((a, b) => b.rating - a.rating);
   }, [
     search,
@@ -137,6 +211,7 @@ const MapView: React.FC<MapProps> = ({
     category,
     birthPlace,
     birthYearRange,
+    birthDate,
   ]);
 
   // Merge fuzzy search results into map markers so they're always visible
@@ -266,9 +341,13 @@ const MapView: React.FC<MapProps> = ({
           category={category}
           birthPlace={birthPlace}
           birthYearRange={birthYearRange}
+          birthDate={birthDate}
+          markerColor={markerColor}
           onCategoryChange={(v) => dispatch(setCategory(v))}
           onBirthPlaceChange={(v) => dispatch(setBirthPlace(v))}
           onBirthYearRangeChange={(v) => dispatch(setBirthYearRange(v))}
+          onBirthDateChange={(v) => dispatch(setBirthDate(v))}
+          onMarkerColorChange={(v) => dispatch(setMarkerColor(v))}
           onReset={() => dispatch(resetFilters())}
         />
       )}
@@ -284,6 +363,7 @@ const MapView: React.FC<MapProps> = ({
             hoveredPerson={hoveredPerson}
             userRole={userRole}
             bookmarkedIds={bookmarkedIds}
+            markerColor={markerColor}
             onRemove={handleRemovePerson}
             onToggleBookmark={handleToggleBookmark}
             showMarkers={showMarkers}

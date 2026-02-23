@@ -118,6 +118,10 @@ export interface CategoryEntry {
   category: string;
   count: number;
 }
+export interface DeathPlaceEntry {
+  deathPlace: string;
+  count: number;
+}
 export interface OverviewData {
   totalPersons: number;
   totalWithCoordinates: number;
@@ -132,6 +136,10 @@ export const statisticsApi = {
   geo: (limit = 20) =>
     api.get<GeoEntry[]>("/statistics/geo", { params: { limit } }),
   categories: () => api.get<CategoryEntry[]>("/statistics/categories"),
+  deathPlaces: (limit = 20) =>
+    api.get<DeathPlaceEntry[]>("/statistics/death-places", {
+      params: { limit },
+    }),
   overview: () => api.get<OverviewData>("/statistics/overview"),
 };
 

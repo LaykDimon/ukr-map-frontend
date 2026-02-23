@@ -13,6 +13,7 @@
     "axios": "^1.7.7",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
     "react-redux": "^9.2.0",
@@ -51,7 +52,12 @@
     ]
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["cypress", "esbuild", "core-js", "core-js-pure"]
+    "onlyBuiltDependencies": [
+      "cypress",
+      "esbuild",
+      "core-js",
+      "core-js-pure"
+    ]
   },
   "jest": {
     "moduleNameMapper": {

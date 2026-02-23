@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface FiltersState {
   search: string;
@@ -6,18 +6,22 @@ interface FiltersState {
   category: string;
   birthPlace: string;
   birthYearRange: [number | null, number | null];
+  birthDate: string;
+  markerColor: string;
 }
 
 const initialState: FiltersState = {
-  search: '',
-  maxCount: 'all',
-  category: '',
-  birthPlace: '',
+  search: "",
+  maxCount: "all",
+  category: "",
+  birthPlace: "",
   birthYearRange: [null, null],
+  birthDate: "",
+  markerColor: "#3388ff",
 };
 
 const filtersSlice = createSlice({
-  name: 'filters',
+  name: "filters",
   initialState,
   reducers: {
     setSearch(state, action: PayloadAction<string>) {
@@ -38,6 +42,12 @@ const filtersSlice = createSlice({
     ) {
       state.birthYearRange = action.payload;
     },
+    setBirthDate(state, action: PayloadAction<string>) {
+      state.birthDate = action.payload;
+    },
+    setMarkerColor(state, action: PayloadAction<string>) {
+      state.markerColor = action.payload;
+    },
     resetFilters() {
       return initialState;
     },
@@ -50,6 +60,8 @@ export const {
   setCategory,
   setBirthPlace,
   setBirthYearRange,
+  setBirthDate,
+  setMarkerColor,
   resetFilters,
 } = filtersSlice.actions;
 export default filtersSlice.reducer;

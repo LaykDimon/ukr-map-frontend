@@ -152,6 +152,16 @@ const AdminPage: React.FC = () => {
       .then((res) => setUsers(res.data))
       .catch((err) => console.error("Failed to load users:", err))
       .finally(() => setUsersLoading(false));
+    // Check if a sync is already running on the server (persists across page reloads)
+    api
+      .get("/wikipedia/sync/status")
+      .then((res) => {
+        if (res.data.syncing) {
+          setSyncing(true);
+          setSyncResult("Sync is running in background…");
+        }
+      })
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRole, token, dispatch, loadProposedEdits, editsFilter]);
 
@@ -171,18 +181,48 @@ const AdminPage: React.FC = () => {
     setSyncing(true);
     setSyncResult(null);
     try {
-      const res = await api.post("/wikipedia/sync", null, {
+      await api.post("/wikipedia/sync", null, {
         params: forceRefresh ? { forceRefresh: true } : {},
       });
-      setSyncResult(`Sync completed: ${JSON.stringify(res.data)}`);
-      dispatch(fetchPersons());
+      setSyncResult("Sync started in background…");
+      // Don't set syncing=false here — polling will detect when it's done
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setSyncResult(`Sync failed: ${msg}`);
-    } finally {
       setSyncing(false);
     }
   };
+
+  const handleStopSync = async () => {
+    try {
+      await api.post("/wikipedia/sync/stop");
+      setSyncResult("Sync stop requested — will stop after current category.");
+      setSyncing(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setSyncResult(`Stop failed: ${msg}`);
+    }
+  };
+
+  // Poll sync status while syncing is true
+  useEffect(() => {
+    if (!syncing) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get("/wikipedia/sync/status");
+        if (!res.data.syncing) {
+          setSyncing(false);
+          setSyncResult((prev) =>
+            prev?.startsWith("Sync started") ? "Sync completed." : prev,
+          );
+          dispatch(fetchPersons());
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [syncing, dispatch]);
 
   const openCreateForm = () => {
     setEditingPerson(null);
@@ -343,6 +383,18 @@ const AdminPage: React.FC = () => {
           >
             {syncing ? "Syncing..." : "Start Sync"}
           </button>
+          {syncing && (
+            <button
+              onClick={handleStopSync}
+              style={{
+                ...btnPrimary,
+                backgroundColor: "var(--danger)",
+                cursor: "pointer",
+              }}
+            >
+              Stop Sync
+            </button>
+          )}
           <label
             style={{
               display: "flex",
@@ -361,6 +413,42 @@ const AdminPage: React.FC = () => {
             />
             Force refresh
           </label>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <button
+            onClick={async () => {
+              setSyncing(true);
+              setSyncResult(null);
+              try {
+                await api.post("/wikipedia/backfill-death-places");
+                setSyncResult("Death place backfill started in background…");
+              } catch (err: unknown) {
+                const msg =
+                  err instanceof Error ? err.message : "Unknown error";
+                setSyncResult(`Backfill failed: ${msg}`);
+                setSyncing(false);
+              }
+            }}
+            disabled={syncing}
+            style={{
+              ...btnPrimary,
+              backgroundColor: syncing ? "var(--bg-hover)" : "var(--warning)",
+              color: syncing ? "var(--text-muted)" : "#fff",
+              cursor: syncing ? "not-allowed" : "pointer",
+              fontSize: 12,
+            }}
+          >
+            Backfill Death Places
+          </button>
+          <span
+            style={{
+              marginLeft: 10,
+              fontSize: 12,
+              color: "var(--text-muted)",
+            }}
+          >
+            ~15 min for all persons
+          </span>
         </div>
         {syncResult && (
           <div
