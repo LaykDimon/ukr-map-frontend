@@ -140,8 +140,6 @@ const MapView: React.FC<MapProps> = ({
         const year = parseInt(y);
         const month = parseInt(m);
         const day = parseInt(d);
-        const monthPad = String(month).padStart(2, "0");
-        const dayPad = String(day).padStart(2, "0");
         const dbDate = p.birthDate.trim();
 
         // 1) Exact match for structured formats first
