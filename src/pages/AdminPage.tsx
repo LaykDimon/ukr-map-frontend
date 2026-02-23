@@ -414,42 +414,7 @@ const AdminPage: React.FC = () => {
             Force refresh
           </label>
         </div>
-        <div style={{ marginTop: 12 }}>
-          <button
-            onClick={async () => {
-              setSyncing(true);
-              setSyncResult(null);
-              try {
-                await api.post("/wikipedia/backfill-death-places");
-                setSyncResult("Death place backfill started in background…");
-              } catch (err: unknown) {
-                const msg =
-                  err instanceof Error ? err.message : "Unknown error";
-                setSyncResult(`Backfill failed: ${msg}`);
-                setSyncing(false);
-              }
-            }}
-            disabled={syncing}
-            style={{
-              ...btnPrimary,
-              backgroundColor: syncing ? "var(--bg-hover)" : "var(--warning)",
-              color: syncing ? "var(--text-muted)" : "#fff",
-              cursor: syncing ? "not-allowed" : "pointer",
-              fontSize: 12,
-            }}
-          >
-            Backfill Death Places
-          </button>
-          <span
-            style={{
-              marginLeft: 10,
-              fontSize: 12,
-              color: "var(--text-muted)",
-            }}
-          >
-            ~15 min for all persons
-          </span>
-        </div>
+
         {syncResult && (
           <div
             style={{
